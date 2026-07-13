@@ -1,30 +1,64 @@
 {
   "name": "merzato-lang",
-  "version": "0.1.0",
-  "description": "A multimodal art programming language combining Piet-style colour transitions, Velato-inspired musical intervals, MerzScript absurdism, and an assembly VM.",
+  "version": "1.0.0",
+  "description": "A multimodal art programming language combining Piet-style colour transitions, Velato-inspired musical intervals, MerzScript absurdism, and a bounded assembly VM.",
   "type": "module",
   "bin": {
     "merzato": "./src/cli.js"
   },
+  "main": "./src/index.js",
+  "types": "./index.d.ts",
   "exports": {
-    ".": "./src/vm.js",
-    "./assembler": "./src/assembler.js",
-    "./art": "./src/artCompiler.js",
-    "./browser": "./src/browserHost.js",
-    "./midi": "./src/midi.js"
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./src/index.js"
+    },
+    "./assembler": {
+      "types": "./index.d.ts",
+      "import": "./src/assembler.js"
+    },
+    "./art": {
+      "types": "./index.d.ts",
+      "import": "./src/artCompiler.js"
+    },
+    "./browser": {
+      "types": "./index.d.ts",
+      "import": "./src/browserHost.js"
+    },
+    "./errors": {
+      "types": "./index.d.ts",
+      "import": "./src/errors.js"
+    },
+    "./midi": {
+      "types": "./index.d.ts",
+      "import": "./src/midi.js"
+    },
+    "./validator": {
+      "types": "./index.d.ts",
+      "import": "./src/validator.js"
+    },
+    "./vm": {
+      "types": "./index.d.ts",
+      "import": "./src/vm.js"
+    },
+    "./package.json": "./package.json"
   },
   "files": [
     "src/",
     "examples/",
     "web/",
+    "index.d.ts",
     "README.md",
     "SPEC.md",
-    "LICENSE"
+    "LICENSE",
+    "CHANGELOG.md",
+    "SECURITY.md"
   ],
   "scripts": {
     "test": "node --test",
-    "check": "node --check src/*.js && node --check web/*.js",
-    "ci": "npm run check && npm test && npm run demo && npm run art",
+    "test:coverage": "node --test --experimental-test-coverage --test-coverage-lines=80 --test-coverage-branches=70 --test-coverage-functions=90",
+    "check": "node --check src/*.js && node --check web/*.js && node scripts/check-version.js",
+    "ci": "npm run check && npm test && npm run demo && npm run art && npm pack --dry-run",
     "demo": "node src/cli.js run examples/hello.mza",
     "art": "node src/cli.js art examples/hello.merz.svg examples/hello.mid",
     "serve": "python3 -m http.server 8080"
@@ -35,12 +69,14 @@
   "keywords": [
     "programming-language",
     "esolang",
-    "art",
+    "art-programming",
     "piet",
     "velato",
     "midi",
     "svg",
-    "virtual-machine"
+    "assembly",
+    "virtual-machine",
+    "turing-complete"
   ],
   "repository": {
     "type": "git",
@@ -51,5 +87,6 @@
   },
   "homepage": "https://github.com/Pepitodrop/merzato-lang#readme",
   "author": "Luis Benedikt",
-  "license": "MIT"
+  "license": "MIT",
+  "sideEffects": false
 }

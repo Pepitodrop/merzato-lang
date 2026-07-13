@@ -3,6 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none'">
   <title>Merzato Playground</title>
   <style>
     :root { font-family: Inter, system-ui, sans-serif; color: #161616; background: #f4f1e8; }
@@ -23,16 +24,17 @@
   <p class="tagline">Paint it. Play it. Insult the browser.</p>
   <div class="grid">
     <section>
-      <textarea id="source" spellcheck="false"></textarea>
+      <label for="source"><strong>Merzato Assembly</strong></label>
+      <textarea id="source" spellcheck="false" aria-label="Merzato Assembly source"></textarea>
       <button id="run">Run assembly</button>
       <button id="runArt">Run painted web app</button>
       <button id="reset">Reset stage</button>
     </section>
     <section>
       <h2>The stage</h2>
-      <div id="app"></div>
+      <div id="app" aria-live="polite"></div>
       <h2>The critic</h2>
-      <div id="console"></div>
+      <div id="console" role="log" aria-live="polite"></div>
       <h2>The painting</h2>
       <div id="painting"><img src="../examples/button.merz.svg" alt="Interactive Merzato painted web app"></div>
     </section>

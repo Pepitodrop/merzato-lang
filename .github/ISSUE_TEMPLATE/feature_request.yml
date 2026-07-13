@@ -26,4 +26,4 @@ body:
     attributes:
       label: Compatibility
       options:
-        - label: I considered whether this changes the Merzato 0.1 language semantics.
+        - label: I considered whether this changes the Merzato 1.x stable semantics.

@@ -1,24 +1,53 @@
 # MerzScript browser ABI
 
-MerzScript maps intentionally absurd phrases to precise host operations. Assembly uses `MERZ`, which is an alias for `SYS`.
+MerzScript maps intentionally absurd phrases to precise host operations. Assembly uses `MERZ`, an alias for `SYS`.
 
-## Phrase contracts
+Stack arguments are shown in push order; the rightmost item is on top when the syscall begins.
 
-Stack arguments are listed in push order. The rightmost value is on top of the stack when the syscall runs.
+| Phrase | Stack before | Capability | Result |
+| --- | --- | --- | --- |
+| `THIS IS NOT A BUTTON` | `text, id` | `dom` | Push button element |
+| `THIS IS NOT A DIV` | `id` | `dom` | Push div element |
+| `PUT IT IN THE MUSEUM` | `child, parent` | `dom` | Append child inside root |
+| `APPLAUD` | `text, target` | `dom` | Set target `textContent` |
+| `DRESS IT LIKE CAPITALISM` | `value, property, target` | `style` | Set one style property |
+| `WHEN THE AUDIENCE CLICKS` | `label, target` | `events` | Queue label on click |
+| `WHEN THE AUDIENCE TYPES` | `label, target` | `events` | Capture value, push it, queue label |
+| `THE CRITIC SAYS` | `value` | `log` | Log value |
+| `BORROW THE INTERNET` | `url` | `network` | Fetch text and push it |
+| `ASK THE AUDIENCE` | `prompt` | `prompt` | Push prompt result |
+| `THE PERFORMANCE IS OVER` | — | — | Halt VM |
 
-| Phrase | Stack before | Result |
-| --- | --- | --- |
-| `THIS IS NOT A BUTTON` | `text, id` | Pushes a button element |
-| `THIS IS NOT A DIV` | `id` | Pushes a div element |
-| `PUT IT IN THE MUSEUM` | `child, parent` | Appends child to parent |
-| `APPLAUD` | `text, target` | Sets target text content |
-| `DRESS IT LIKE CAPITALISM` | `value, property, target` | Sets one inline style property |
-| `WHEN THE AUDIENCE CLICKS` | `label, target` | Runs label after each click |
-| `WHEN THE AUDIENCE TYPES` | `label, target` | Pushes input value and runs label |
-| `THE CRITIC SAYS` | `value` | Logs a value |
-| `BORROW THE INTERNET` | `url` | Fetches text and pushes it |
-| `ASK THE AUDIENCE` | `prompt` | Pushes prompt result |
-| `THE PERFORMANCE IS OVER` | — | Halts the VM |
+## Default capability policy
+
+```js
+{
+  dom: true,
+  events: true,
+  style: true,
+  log: true,
+  network: false,
+  prompt: false
+}
+```
+
+The browser host confines element lookup and mutation to its root. Created detached elements may be appended into the root, but existing elements outside the root cannot be targeted.
+
+## Network policy
+
+Enabling `network` is not sufficient by itself; an origin must also be allowed:
+
+```js
+new BrowserHost({
+  root,
+  capabilities: { network: true },
+  allowedOrigins: ['https://api.example.com'],
+  requestTimeoutMs: 5000,
+  maxResponseBytes: 250000
+});
+```
+
+Only HTTP and HTTPS are accepted. Requests omit credentials and reject redirects.
 
 ## Example
 
@@ -43,5 +72,3 @@ clicked:
   merz "APPLAUD"
   halt
 ```
-
-Browser event handlers are serialized by the VM, so rapid input cannot execute two instruction streams concurrently.
