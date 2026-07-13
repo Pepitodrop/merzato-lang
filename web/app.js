@@ -8,7 +8,13 @@ const sourceElement = document.querySelector('#source');
 const appElement = document.querySelector('#app');
 const consoleElement = document.querySelector('#console');
 
-sourceElement.value = await fetch('../examples/counter.mza').then(response => response.text());
+async function loadExample(path) {
+  const response = await fetch(path);
+  if (!response.ok) throw new Error(`Could not load example: HTTP ${response.status}`);
+  sourceElement.value = await response.text();
+}
+
+await loadExample('../examples/counter.mza');
 
 function reset() {
   appElement.replaceChildren();
@@ -26,6 +32,15 @@ document.querySelector('#run').addEventListener('click', async () => {
   reset();
   try {
     await execute(assemble(sourceElement.value));
+  } catch (error) {
+    consoleElement.textContent = `Error: ${error.stack ?? error.message}`;
+  }
+});
+
+document.querySelector('#loadMemes').addEventListener('click', async () => {
+  reset();
+  try {
+    await loadExample('../examples/merz-memes.mza');
   } catch (error) {
     consoleElement.textContent = `Error: ${error.stack ?? error.message}`;
   }
