@@ -1,0 +1,21 @@
+; Political satire example using documented Friedrich Merz memes and recurring topics.
+; It deliberately avoids demeaning or disputed migration quotes.
+.entry main
+
+main:
+  push "Was ist Bubatz?"
+  merz "THE CRITIC SAYS"
+
+  push "Jetzt darf auch mal Rambo Zambo im Adenauer-Haus sein."
+  merz "THE CRITIC SAYS"
+
+  push "Bierdeckel-Steuer"
+  merz "THE CRITIC SAYS"
+
+  push "Brandmauer"
+  merz "THE CRITIC SAYS"
+
+  push "Mehr arbeiten"
+  merz "THE CRITIC SAYS"
+
+  halt
