@@ -1,0 +1,29 @@
+; Merzato Assembly: ordinary low-level code wearing a ridiculous beret.
+.entry main
+
+main:
+  push 72
+  outc
+  push 101
+  outc
+  push 108
+  outc
+  push 108
+  outc
+  push 111
+  outc
+  push 44
+  outc
+  push 32
+  outc
+  push 97
+  outc
+  push 114
+  outc
+  push 116
+  outc
+  push 33
+  outc
+  push 10
+  outc
+  halt
