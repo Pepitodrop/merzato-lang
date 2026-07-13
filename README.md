@@ -1,33 +1,23 @@
 # Merzato
 
 [![CI](https://github.com/Pepitodrop/merzato-lang/actions/workflows/ci.yml/badge.svg)](https://github.com/Pepitodrop/merzato-lang/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/Pepitodrop/merzato-lang/actions/workflows/codeql.yml/badge.svg)](https://github.com/Pepitodrop/merzato-lang/actions/workflows/codeql.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![Node.js 20+](https://img.shields.io/badge/Node.js-20%2B-339933)](https://nodejs.org/)
-[![Status: Experimental](https://img.shields.io/badge/status-experimental-orange.svg)](./ROADMAP.md)
+[![Version 1.0.0](https://img.shields.io/badge/version-1.0.0-blue.svg)](./CHANGELOG.md)
 
 > **Paint it. Play it. Insult the browser.**
 
-**Merzato** is an open-source multimodal art programming language combining:
+**Merzato** is a multimodal art programming language combining:
 
 - **Piet-style visual semantics:** colour transitions select operations;
 - **Velato-inspired musical semantics:** MIDI intervals select operands;
-- **MerzScript absurdism:** joke-language phrases control browser capabilities;
-- **assembly foundations:** a small register/stack virtual machine is the canonical execution layer.
+- **MerzScript absurdism:** joke-language phrases invoke explicit host capabilities;
+- **assembly foundations:** a validated register/stack VM is the canonical execution layer.
 
-The current `0.1` implementation is runnable, Turing complete at the abstract-machine level, and capable of creating interactive browser applications.
+Version **1.0.0** defines a stable assembly, ordered-SVG, MIDI, MerzScript, CLI, and JavaScript API profile. It can create interactive browser applications and is Turing complete at the abstract-machine level.
 
-## What is implemented
-
-- Merzato Assembly (`.mza`) parser and CLI
-- 16-register stack VM with arbitrary-precision integers
-- integer-addressed heap, labels, branches, calls, and step limits
-- executable SVG artworks (`.merz.svg`)
-- Standard MIDI note parsing and interval-derived registers
-- MerzScript DOM, event, style, prompt, log, and fetch operations
-- browser playground and interactive counter
-- automated conformance tests and GitHub Actions CI
-
-## Try it
+## Install and verify
 
 Requirements: Node.js 20 or newer.
 
@@ -38,24 +28,41 @@ npm ci
 npm run ci
 ```
 
-Run the assembly demo:
+The package has no runtime dependencies.
+
+## Run programs
+
+Assembly:
 
 ```bash
 node src/cli.js run examples/hello.mza
 # Hello, art!
 ```
 
-Run an SVG painting paired with a MIDI score:
+Executable SVG paired with MIDI:
 
 ```bash
 node src/cli.js art examples/hello.merz.svg examples/hello.mid
 # Hi
 ```
 
-Validate a program without executing it:
+Validate without execution:
 
 ```bash
 node src/cli.js check examples/button.merz.svg examples/button.mid
+```
+
+Read assembly from standard input and bound its execution:
+
+```bash
+printf 'push 65\noutc\nhalt\n' | node src/cli.js run - --max-steps 1000
+# A
+```
+
+Machine-readable output:
+
+```bash
+node src/cli.js run examples/hello.mza --json
 ```
 
 ## Build a browser app
@@ -95,7 +102,7 @@ on_click:
   halt
 ```
 
-This creates a real DOM button and updates it after each click. Browser event executions are serialized by the VM.
+This creates a real DOM button and updates it after each click. Event executions are serialized through the VM queue, so rapid browser input cannot race the instruction stream.
 
 ## Browser playground
 
@@ -103,19 +110,19 @@ This creates a real DOM button and updates it after each click. Browser event ex
 npm run serve
 ```
 
-Open `http://localhost:8080/web/`. You can edit and execute assembly or run the bundled SVG + MIDI + MerzScript artwork.
+Open `http://localhost:8080/web/`. The playground can execute editable assembly or the bundled SVG + MIDI + MerzScript artwork.
 
-## Three layers, one program
+## Three artistic layers, one runtime
 
-| Artistic layer | Computational role |
+| Layer | Computational role |
 | --- | --- |
 | SVG colour transition | Selects the opcode |
 | MIDI note interval | Selects a register or operand |
-| MerzScript phrase | Invokes a host/browser capability |
+| MerzScript phrase | Invokes an approved host capability |
 | Merzato Assembly | Canonical low-level representation |
-| Merzato VM | Executes the program |
+| Merzato VM | Validates and executes the program |
 
-Example MerzScript phrases include:
+Example MerzScript phrases:
 
 ```text
 THIS IS NOT A BUTTON
@@ -129,39 +136,100 @@ THE PERFORMANCE IS OVER
 
 Their exact stack contracts are documented in [`docs/MERZSCRIPT.md`](./docs/MERZSCRIPT.md).
 
+## Secure embedding
+
+Merzato programs are code, not passive media. The 1.0 runtime therefore provides:
+
+- instruction, stack, call-stack, heap, string, SVG, MIDI, and response-size limits;
+- validation of opcodes, operand arity, registers, labels, and jump targets before execution;
+- source line, artwork block, and program-counter locations on runtime errors;
+- a browser host confined to one DOM root;
+- network and prompt capabilities disabled by default;
+- explicit network-origin allowlists, timeouts, response limits, and credential omission;
+- disposable browser event bindings.
+
+A safe browser host starts with the default policy:
+
+```js
+import { BrowserHost, MerzatoVM, assemble } from 'merzato-lang';
+
+const host = new BrowserHost({
+  root: document.querySelector('#app'),
+  capabilities: {
+    dom: true,
+    events: true,
+    style: true,
+    network: false,
+    prompt: false
+  }
+});
+
+const vm = new MerzatoVM(assemble(source), host, {
+  maxSteps: 100_000,
+  maxHeapCells: 10_000
+});
+
+await vm.run();
+```
+
+See [`SECURITY.md`](./SECURITY.md) for the trust model.
+
+## JavaScript API
+
+```js
+import {
+  assemble,
+  ConsoleHost,
+  MerzatoVM,
+  parseMidiNotes,
+  compileArtSvg
+} from 'merzato-lang';
+
+const program = assemble('push 42\noutn\nhalt');
+const host = new ConsoleHost({ write: false });
+await new MerzatoVM(program, host).run();
+console.log(host.outputText); // 42
+```
+
+The package includes TypeScript declarations and subpath exports for the assembler, art compiler, browser host, errors, MIDI parser, validator, and VM.
+
 ## Turing completeness
 
-The abstract VM can simulate a two-counter Minsky machine. Registers or heap cells hold arbitrary-precision counters; increment, conditional decrement, zero testing, and arbitrary jumps are expressible using the core instruction set. Therefore the abstract language is computationally universal. Real executions remain bounded by available memory and the configured instruction limit.
+The abstract VM can simulate a two-counter Minsky machine. Registers or heap cells hold arbitrary-precision counters; increment, conditional decrement, zero testing, and arbitrary jumps are expressible using the stable instruction set. Real executions remain bounded by configured resource limits and available memory.
+
+## Stable 1.x profile
+
+The following are compatibility commitments for the 1.x line:
+
+- assembly instruction names and stack effects;
+- register count and interval-to-register mapping;
+- ordered SVG `data-*` attributes;
+- documented MerzScript phrase contracts;
+- public JavaScript exports and CLI command forms.
+
+Full two-dimensional Piet Direction Pointer/Codel Chooser traversal remains a future opt-in profile and will not silently change ordered-SVG semantics. See [`docs/STABILITY.md`](./docs/STABILITY.md).
 
 ## Project layout
 
 ```text
-src/                 assembler, VM, SVG compiler, MIDI parser, hosts, CLI
-examples/            assembly, SVG, and MIDI example programs
+src/                 assembler, validator, VM, SVG compiler, MIDI parser, hosts, CLI
+examples/            assembly, SVG, and MIDI programs
 web/                 zero-build browser playground
-test/                Node.js conformance and integration tests
-docs/                architecture, getting started, and MerzScript ABI
-SPEC.md               versioned language specification
-ROADMAP.md            planned spatial, musical, web, and editor work
+test/                conformance, security, integration, and CLI tests
+docs/                architecture, stability, ABI, release, and usage documentation
+SPEC.md               normative 1.0 language specification
 ```
-
-## Current limitation
-
-The SVG profile currently orders executable rectangles with `data-order`. It does not yet implement Piet's full two-dimensional Direction Pointer and Codel Chooser traversal. That spatial execution model is the primary `0.2` milestone and can be added without changing the underlying VM.
 
 ## Documentation
 
+- [Language specification](./SPEC.md)
 - [Getting started](./docs/GETTING_STARTED.md)
 - [Architecture](./docs/ARCHITECTURE.md)
 - [MerzScript ABI](./docs/MERZSCRIPT.md)
-- [Language specification](./SPEC.md)
-- [Roadmap](./ROADMAP.md)
-- [Contributing](./CONTRIBUTING.md)
+- [Stability and compatibility](./docs/STABILITY.md)
+- [Release process](./docs/RELEASING.md)
 - [Security policy](./SECURITY.md)
-
-## Contributing
-
-Contributions from programmers, artists, musicians, and language-design enthusiasts are welcome. Semantic changes should include tests and an update to `SPEC.md`. See [`CONTRIBUTING.md`](./CONTRIBUTING.md).
+- [Contributing](./CONTRIBUTING.md)
 
 ## License
 

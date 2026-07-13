@@ -1,52 +1,56 @@
 # Architecture
 
-Merzato separates artistic source formats from execution through a small canonical virtual machine.
+Merzato separates artistic source formats from execution through a validated canonical program and bounded VM.
 
 ```text
-Merzato Assembly (.mza) ───────┐
-                               ├──> instruction program ──> Merzato VM ──> host
-SVG painting (.merz.svg) ──┐   │
-                           ├───┘
-MIDI score (.mid) ──────────┘
+Assembly (.mza) ───────────────┐
+                               ├─> validator ─> instruction program ─> VM ─> host
+SVG artwork (.merz.svg) ──┐    │
+                          ├────┘
+MIDI score (.mid) ─────────┘
 ```
 
 ## Front ends
 
 ### Assembly
 
-`src/assembler.js` parses the textual low-level language. It is the easiest format to debug and the reference representation for examples and tests.
+`src/assembler.js` tokenizes directives, labels, instructions, quoted strings, registers, and arbitrary-precision integer literals. It rejects malformed syntax and passes the result through the shared validator.
 
-### SVG artwork
+### Ordered SVG
 
-`src/artCompiler.js` reads executable SVG rectangles. A transition between two Piet palette colours selects an opcode. Block metadata supplies constants, jump labels, and MerzScript phrases.
-
-Version 0.1 uses `data-order` to define traversal. This keeps the prototype deterministic while the full spatial DP/CC traversal is developed.
+`src/artCompiler.js` scans executable SVG rectangle tags, validates the stable 1.0 attributes, derives operations from Piet colour deltas, and derives registers from note intervals. It rejects entity declarations, duplicate orders/labels, unsupported colours, unsafe argument shapes, invalid notes, and unresolved targets.
 
 ### MIDI
 
-`src/midi.js` extracts note-on events from Standard MIDI files. The interval between adjacent notes selects register operands for colour transitions that require registers.
+`src/midi.js` parses bounded Standard MIDI files with chunk and event bounds checking. It exposes file metadata, first-musical-track selection, explicit track selection, and merged tick order.
+
+## Validator
+
+`src/validator.js` defines the instruction signatures and validates:
+
+- supported opcodes;
+- exact operand arity;
+- registers;
+- labels and entry points;
+- direct and symbolic branch targets;
+- syscall phrases.
+
+Both source front ends and direct VM construction use this validator.
 
 ## Virtual machine
 
-`src/vm.js` implements:
+`src/vm.js` implements tagged registers, operand and call stacks, heap, control flow, output, syscalls, structured errors, resource limits, immutable snapshots, reset/disposal, and a serialized run queue.
 
-- 16 tagged registers;
-- an operand stack;
-- a call stack;
-- an integer-addressed heap;
-- arbitrary-precision signed integers;
-- branches, calls, output, and host syscalls;
-- a configurable instruction limit;
-- a serialized execution queue for browser events.
-
-The abstract heap and integers are unbounded; concrete execution is limited by host resources.
+Event arguments are inserted only inside the queue operation, preventing input callbacks from mutating a running VM.
 
 ## Hosts
 
-A host supplies output and syscall behaviour. `ConsoleHost` supports terminal output and basic MerzScript control. `BrowserHost` implements DOM creation, mutation, events, prompts, network fetches, and logging.
+`ConsoleHost` supports terminal output and the console-compatible MerzScript subset.
 
-A custom host only needs compatible `output(value, mode, vm)` and `call(name, vm)` methods.
+`BrowserHost` provides a capability-controlled browser ABI. DOM targets must belong to its configured root. Network and prompt access are disabled by default. Network access uses an origin allowlist, no credentials, rejected redirects, timeouts, and response limits.
 
-## Trust boundary
+Custom hosts implement compatible `output` and `call` methods. Custom syscalls are part of the embedding application, not the standard 1.0 ABI.
 
-The VM is not a security sandbox. Step limits constrain instruction count, but values and host calls can still consume resources. Browser capabilities should be explicitly restricted before running untrusted Merzato programs.
+## Packaging
+
+`src/index.js` is the public package entry point. `index.d.ts` defines the TypeScript surface. The package has no runtime dependencies.

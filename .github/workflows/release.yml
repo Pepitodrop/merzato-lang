@@ -1,0 +1,95 @@
+name: Release
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - package.json
+      - src/version.js
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: merzato-release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Create versioned release
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+          package-manager-cache: true
+
+      - name: Install and validate
+        run: |
+          npm ci
+          npm run ci
+
+      - name: Resolve version
+        id: version
+        shell: bash
+        run: |
+          VERSION="$(node -p "require('./package.json').version")"
+          if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
+            echo "Invalid semantic version: $VERSION" >&2
+            exit 1
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Check whether release already exists
+        id: existing
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.version.outputs.tag }}
+        shell: bash
+        run: |
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build release artifacts
+        if: steps.existing.outputs.exists == 'false'
+        id: artifacts
+        shell: bash
+        run: |
+          npm pack --json > pack-result.json
+          TARBALL="$(node -e "const fs=require('fs'); console.log(JSON.parse(fs.readFileSync('pack-result.json','utf8'))[0].filename)")"
+          sha256sum "$TARBALL" > "$TARBALL.sha256"
+          npm sbom --sbom-format cyclonedx > "merzato-${{ steps.version.outputs.version }}-sbom.cdx.json"
+          echo "tarball=$TARBALL" >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub release
+        if: steps.existing.outputs.exists == 'false'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.version.outputs.tag }}
+          VERSION: ${{ steps.version.outputs.version }}
+          TARBALL: ${{ steps.artifacts.outputs.tarball }}
+        shell: bash
+        run: |
+          FLAGS=(--target "$GITHUB_SHA" --title "Merzato $TAG" --generate-notes)
+          if [[ "$VERSION" == *-* ]]; then
+            FLAGS=(--target "$GITHUB_SHA" --title "Merzato $TAG" --generate-notes --prerelease)
+          fi
+          gh release create "$TAG" \
+            "$TARBALL" \
+            "$TARBALL.sha256" \
+            "merzato-$VERSION-sbom.cdx.json" \
+            "${FLAGS[@]}"
