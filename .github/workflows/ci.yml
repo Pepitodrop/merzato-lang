@@ -57,3 +57,25 @@ jobs:
           package-manager-cache: true
       - run: npm ci
       - run: npm run test:coverage
+
+  browser-e2e:
+    name: Browser end-to-end
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+          package-manager-cache: true
+
+      - name: Install package
+        run: npm ci
+
+      - name: Run real-browser playground test
+        run: npm run test:e2e
