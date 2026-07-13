@@ -1,6 +1,6 @@
 {
   "name": "merzato-lang",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A multimodal art programming language combining Piet-style colour transitions, Velato-inspired musical intervals, MerzScript absurdism, and a bounded assembly VM.",
   "type": "module",
   "bin": {
@@ -57,7 +57,8 @@
   "scripts": {
     "test": "node --test",
     "test:coverage": "node --test --experimental-test-coverage --test-coverage-lines=80 --test-coverage-branches=70 --test-coverage-functions=90",
-    "check": "node --check src/*.js && node --check web/*.js && node scripts/check-version.js",
+    "test:e2e": "node scripts/e2e-browser.js",
+    "check": "node --check src/*.js && node --check web/*.js && node --check scripts/*.js && node scripts/check-version.js",
     "ci": "npm run check && npm test && npm run demo && npm run art && npm pack --dry-run",
     "demo": "node src/cli.js run examples/hello.mza",
     "art": "node src/cli.js art examples/hello.merz.svg examples/hello.mid",
@@ -85,7 +86,7 @@
   "bugs": {
     "url": "https://github.com/Pepitodrop/merzato-lang/issues"
   },
-  "homepage": "https://github.com/Pepitodrop/merzato-lang#readme",
+  "homepage": "https://pepitodrop.github.io/merzato-lang/",
   "author": "Luis Benedikt",
   "license": "MIT",
   "sideEffects": false
