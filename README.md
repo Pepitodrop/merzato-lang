@@ -4,7 +4,8 @@
 [![CodeQL](https://github.com/Pepitodrop/merzato-lang/actions/workflows/codeql.yml/badge.svg)](https://github.com/Pepitodrop/merzato-lang/actions/workflows/codeql.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![Node.js 20+](https://img.shields.io/badge/Node.js-20%2B-339933)](https://nodejs.org/)
-[![Version 1.0.0](https://img.shields.io/badge/version-1.0.0-blue.svg)](./CHANGELOG.md)
+[![Version 1.0.1](https://img.shields.io/badge/version-1.0.1-blue.svg)](./CHANGELOG.md)
+[![Try online](https://img.shields.io/badge/try-online-brightgreen.svg)](https://pepitodrop.github.io/merzato-lang/)
 
 > **Paint it. Play it. Insult the browser.**
 
@@ -15,44 +16,101 @@
 - **MerzScript absurdism:** joke-language phrases invoke explicit host capabilities;
 - **assembly foundations:** a validated register/stack VM is the canonical execution layer.
 
-Version **1.0.0** defines a stable assembly, ordered-SVG, MIDI, MerzScript, CLI, and JavaScript API profile. It can create interactive browser applications and is Turing complete at the abstract-machine level.
+Version **1.0.1** implements the stable 1.x Assembly, ordered-SVG, MIDI, MerzScript, CLI, and JavaScript API profile. It can create interactive browser applications and is Turing complete at the abstract-machine level.
 
-## Install and verify
+## Try Merzato
 
-Requirements: Node.js 20 or newer.
+Open the hosted playground:
+
+**https://pepitodrop.github.io/merzato-lang/**
+
+Or run it locally with Node.js 20 or newer:
 
 ```bash
 git clone https://github.com/Pepitodrop/merzato-lang.git
 cd merzato-lang
 npm ci
 npm run ci
+npm run serve
 ```
+
+Then open `http://localhost:8080/web/`.
 
 The package has no runtime dependencies.
 
-## Run programs
+## Hello World
 
-Assembly:
+Create a file called `hello-world.mza`:
+
+```asm
+.entry main
+
+main:
+  push 72
+  outc
+  push 101
+  outc
+  push 108
+  outc
+  push 108
+  outc
+  push 111
+  outc
+  push 44
+  outc
+  push 32
+  outc
+  push 119
+  outc
+  push 111
+  outc
+  push 114
+  outc
+  push 108
+  outc
+  push 100
+  outc
+  push 33
+  outc
+  push 10
+  outc
+  halt
+```
+
+Run it:
+
+```bash
+node src/cli.js run hello-world.mza
+```
+
+Output:
+
+```text
+Hello, world!
+```
+
+The repository also includes `examples/hello.mza`, which prints `Hello, art!`:
 
 ```bash
 node src/cli.js run examples/hello.mza
-# Hello, art!
 ```
 
-Executable SVG paired with MIDI:
+## Run artwork
+
+Execute an SVG painting paired with a MIDI score:
 
 ```bash
 node src/cli.js art examples/hello.merz.svg examples/hello.mid
 # Hi
 ```
 
-Validate without execution:
+Validate a program without executing it:
 
 ```bash
 node src/cli.js check examples/button.merz.svg examples/button.mid
 ```
 
-Read assembly from standard input and bound its execution:
+Read Assembly from standard input and bound its execution:
 
 ```bash
 printf 'push 65\noutc\nhalt\n' | node src/cli.js run - --max-steps 1000
@@ -104,14 +162,6 @@ on_click:
 
 This creates a real DOM button and updates it after each click. Event executions are serialized through the VM queue, so rapid browser input cannot race the instruction stream.
 
-## Browser playground
-
-```bash
-npm run serve
-```
-
-Open `http://localhost:8080/web/`. The playground can execute editable assembly or the bundled SVG + MIDI + MerzScript artwork.
-
 ## Three artistic layers, one runtime
 
 | Layer | Computational role |
@@ -138,7 +188,7 @@ Their exact stack contracts are documented in [`docs/MERZSCRIPT.md`](./docs/MERZ
 
 ## Secure embedding
 
-Merzato programs are code, not passive media. The 1.0 runtime therefore provides:
+Merzato programs are code, not passive media. The runtime provides:
 
 - instruction, stack, call-stack, heap, string, SVG, MIDI, and response-size limits;
 - validation of opcodes, operand arity, registers, labels, and jump targets before execution;
@@ -147,8 +197,6 @@ Merzato programs are code, not passive media. The 1.0 runtime therefore provides
 - network and prompt capabilities disabled by default;
 - explicit network-origin allowlists, timeouts, response limits, and credential omission;
 - disposable browser event bindings.
-
-A safe browser host starts with the default policy:
 
 ```js
 import { BrowserHost, MerzatoVM, assemble } from 'merzato-lang';
@@ -201,7 +249,7 @@ The abstract VM can simulate a two-counter Minsky machine. Registers or heap cel
 
 The following are compatibility commitments for the 1.x line:
 
-- assembly instruction names and stack effects;
+- Assembly instruction names and stack effects;
 - register count and interval-to-register mapping;
 - ordered SVG `data-*` attributes;
 - documented MerzScript phrase contracts;
@@ -213,9 +261,10 @@ Full two-dimensional Piet Direction Pointer/Codel Chooser traversal remains a fu
 
 ```text
 src/                 assembler, validator, VM, SVG compiler, MIDI parser, hosts, CLI
-examples/            assembly, SVG, and MIDI programs
+examples/            Assembly, SVG, and MIDI programs
 web/                 zero-build browser playground
 test/                conformance, security, integration, and CLI tests
+scripts/             release checks and browser end-to-end test
 docs/                architecture, stability, ABI, release, and usage documentation
 SPEC.md               normative 1.0 language specification
 ```
