@@ -4,6 +4,19 @@ All notable changes to Merzato are documented here. The project follows semantic
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-07-13
+
+### Documentation and discoverability
+
+- Added the complete Merzato Hello World source directly to the README.
+- Added a prominent public playground link and GitHub Pages deployment.
+
+### Validation
+
+- Added a dependency-free Chrome DevTools Protocol end-to-end test.
+- The browser test executes editable Assembly, verifies serialized counter clicks, runs the SVG + MIDI artwork, and checks the generated DOM result.
+- Added the browser test as a required GitHub Actions job.
+
 ## [1.0.0] - 2026-07-13
 
 ### Stable language profile
