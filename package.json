@@ -1,0 +1,55 @@
+{
+  "name": "merzato-lang",
+  "version": "0.1.0",
+  "description": "A multimodal art programming language combining Piet-style colour transitions, Velato-inspired musical intervals, MerzScript absurdism, and an assembly VM.",
+  "type": "module",
+  "bin": {
+    "merzato": "./src/cli.js"
+  },
+  "exports": {
+    ".": "./src/vm.js",
+    "./assembler": "./src/assembler.js",
+    "./art": "./src/artCompiler.js",
+    "./browser": "./src/browserHost.js",
+    "./midi": "./src/midi.js"
+  },
+  "files": [
+    "src/",
+    "examples/",
+    "web/",
+    "README.md",
+    "SPEC.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "node --test",
+    "check": "node --check src/*.js && node --check web/*.js",
+    "ci": "npm run check && npm test && npm run demo && npm run art",
+    "demo": "node src/cli.js run examples/hello.mza",
+    "art": "node src/cli.js art examples/hello.merz.svg examples/hello.mid",
+    "serve": "python3 -m http.server 8080"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "keywords": [
+    "programming-language",
+    "esolang",
+    "art",
+    "piet",
+    "velato",
+    "midi",
+    "svg",
+    "virtual-machine"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Pepitodrop/merzato-lang.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Pepitodrop/merzato-lang/issues"
+  },
+  "homepage": "https://github.com/Pepitodrop/merzato-lang#readme",
+  "author": "Luis Benedikt",
+  "license": "MIT"
+}

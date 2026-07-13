@@ -1,0 +1,29 @@
+name: Feature request
+description: Propose a language, tooling, artwork, music, runtime, or web capability.
+title: "[Feature]: "
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or creative goal
+      description: What should an artist or programmer be able to express?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed design
+      description: Include syntax, colour transitions, interval behaviour, or MerzScript phrases where relevant.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+  - type: checkboxes
+    id: compatibility
+    attributes:
+      label: Compatibility
+      options:
+        - label: I considered whether this changes the Merzato 0.1 language semantics.

@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Merzato Playground</title>
+  <style>
+    :root { font-family: Inter, system-ui, sans-serif; color: #161616; background: #f4f1e8; }
+    body { max-width: 1100px; margin: 0 auto; padding: 28px; }
+    h1 { font-size: clamp(2.5rem, 8vw, 6rem); line-height: .9; margin: 0 0 12px; }
+    .tagline { font-family: monospace; margin-bottom: 28px; }
+    .grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(280px, .8fr); gap: 22px; }
+    textarea { width: 100%; min-height: 500px; box-sizing: border-box; padding: 16px; font: 14px/1.45 ui-monospace, monospace; border: 3px solid #161616; background: #fff; }
+    button { border: 3px solid #161616; background: #ffff00; padding: 10px 16px; font-weight: 800; cursor: pointer; margin: 0 8px 8px 0; }
+    #app, #console, #painting { min-height: 120px; border: 3px solid #161616; background: white; padding: 16px; margin-bottom: 18px; overflow: auto; }
+    #console { white-space: pre-wrap; font-family: monospace; background: #111; color: #b9ffb9; }
+    #painting img { width: 100%; display: block; }
+    @media (max-width: 760px) { .grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <h1>MERZATO</h1>
+  <p class="tagline">Paint it. Play it. Insult the browser.</p>
+  <div class="grid">
+    <section>
+      <textarea id="source" spellcheck="false"></textarea>
+      <button id="run">Run assembly</button>
+      <button id="runArt">Run painted web app</button>
+      <button id="reset">Reset stage</button>
+    </section>
+    <section>
+      <h2>The stage</h2>
+      <div id="app"></div>
+      <h2>The critic</h2>
+      <div id="console"></div>
+      <h2>The painting</h2>
+      <div id="painting"><img src="../examples/button.merz.svg" alt="Interactive Merzato painted web app"></div>
+    </section>
+  </div>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>

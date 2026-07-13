@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="820" height="240" viewBox="0 0 820 240" role="img" aria-label="An interactive Merzato web app encoded as a painting">
+  <rect width="820" height="240" fill="#ffffff"/>
+  <text x="28" y="34" font-family="monospace" font-size="18">A BUTTON DENIES ITS BUTTONHOOD, THEN BECOMES CLICKABLE.</text>
+  <text x="28" y="216" font-family="monospace" font-size="14">colour = opcode · melody = register · nonsense = browser syscall</text>
+
+  <rect data-order="0" data-note="60" x="30"  y="65" width="95" height="120" fill="#FFC0C0"/>
+  <rect data-order="1" data-note="62" x="135" y="65" width="95" height="120" fill="#FFC0FF"
+        data-merz="THIS IS NOT A BUTTON"
+        data-args="[&quot;Painted button&quot;,&quot;paintedButton&quot;]"
+        data-store="r0"/>
+  <rect data-order="2" data-note="62" x="240" y="65" width="95" height="120" fill="#00FFFF"/>
+  <rect data-order="3" data-note="67" x="345" y="65" width="95" height="120" fill="#00FF00"
+        data-merz="PUT IT IN THE MUSEUM"
+        data-args="[&quot;#app&quot;]"/>
+  <rect data-order="4" data-note="69" x="450" y="65" width="95" height="120" fill="#FFFF00"
+        data-merz="WHEN THE AUDIENCE CLICKS"
+        data-args="[&quot;on_click&quot;,&quot;#paintedButton&quot;]"/>
+  <rect data-order="5" data-note="71" x="555" y="65" width="95" height="120" fill="#FF0000"
+        data-merz="THE PERFORMANCE IS OVER"/>
+  <rect data-order="6" data-note="74" x="660" y="65" width="95" height="120" fill="#FF00FF"
+        data-label="on_click"
+        data-merz="APPLAUD"
+        data-args="[&quot;The painting clicked back.&quot;,&quot;#paintedButton&quot;]"/>
+</svg>
