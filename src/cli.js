@@ -3,6 +3,7 @@ import { readFile } from 'node:fs/promises';
 import { stdin, stderr, stdout } from 'node:process';
 import { assemble } from './assembler.js';
 import { compileArtSvg } from './artCompiler.js';
+import { MerzatoResourceError } from './errors.js';
 import { parseMidiNotes } from './midi.js';
 import { ConsoleHost, MerzatoVM } from './vm.js';
 import { VERSION } from './version.js';
@@ -11,8 +12,8 @@ function usage(stream = stdout) {
   stream.write(`Merzato ${VERSION}\n\n`);
   stream.write('Paint it. Play it. Insult the browser.\n\n');
   stream.write('Usage:\n');
-  stream.write('  merzato run <program.mza|-> [--max-steps N] [--json]\n');
-  stream.write('  merzato art <painting.merz.svg|-> [score.mid] [--max-steps N] [--json]\n');
+  stream.write('  merzato run <program.mza|-> [--max-steps N] [--trace] [--json]\n');
+  stream.write('  merzato art <painting.merz.svg|-> [score.mid] [--max-steps N] [--trace] [--json]\n');
   stream.write('  merzato asm <program.mza|-> [--json]\n');
   stream.write('  merzato check <program.mza|painting.merz.svg|-> [score.mid] [--json]\n');
   stream.write('  merzato --version\n');
@@ -20,11 +21,12 @@ function usage(stream = stdout) {
 
 function parseArguments(argv) {
   const positionals = [];
-  const options = { json: false, debug: false, maxSteps: undefined };
+  const options = { json: false, debug: false, trace: false, maxSteps: undefined };
   for (let index = 0; index < argv.length; index += 1) {
     const value = argv[index];
     if (value === '--json') options.json = true;
     else if (value === '--debug') options.debug = true;
+    else if (value === '--trace') options.trace = true;
     else if (value === '--max-steps') {
       const raw = argv[++index];
       if (raw === undefined) throw new Error('--max-steps requires a value');
@@ -95,6 +97,55 @@ function errorPayload(error) {
   };
 }
 
+function traceValue(value) {
+  if (typeof value === 'bigint') return value.toString();
+  if (value && typeof value === 'object' && value.type === 'register') return `r${value.index}`;
+  if (typeof value === 'string') return JSON.stringify(value);
+  if (value === undefined) return 'undefined';
+  try {
+    return JSON.stringify(value, jsonReplacer) ?? String(value);
+  } catch {
+    return String(value);
+  }
+}
+
+function traceInstruction(instruction) {
+  if (!instruction) return '<end>';
+  const operands = instruction.args.map(traceValue).join(' ');
+  return operands ? `${instruction.op} ${operands}` : instruction.op;
+}
+
+function traceStack(stack) {
+  return `[${stack.map(traceValue).join(', ')}]`;
+}
+
+async function executeProgram(program, host, options) {
+  const vm = new MerzatoVM(program, host, { maxSteps: options.maxSteps });
+  if (!options.trace) return vm.run();
+
+  const maxSteps = options.maxSteps ?? vm.maxSteps;
+  let steps = 0;
+  while (!vm.halted) {
+    if (steps >= maxSteps) {
+      throw new MerzatoResourceError(`Step limit exceeded (${maxSteps})`, {
+        limit: maxSteps,
+        pc: vm.pc
+      });
+    }
+    const instruction = vm.program.instructions[vm.pc];
+    const line = instruction?.line === undefined ? '' : ` line=${instruction.line}`;
+    const artOrder = instruction?.artOrder === undefined ? '' : ` art=${instruction.artOrder}`;
+    stderr.write(
+      `[trace] pc=${vm.pc}${line}${artOrder} ${traceInstruction(instruction)} stack=${traceStack(vm.stack)}\n`
+    );
+    await vm.step();
+    steps += 1;
+  }
+
+  stderr.write(`[trace] halted steps=${steps} pc=${vm.pc} stack=${traceStack(vm.stack)}\n`);
+  return vm.snapshot(steps);
+}
+
 async function main() {
   const rawArgs = process.argv.slice(2);
   if (rawArgs.length === 1 && ['--help', '-h', 'help'].includes(rawArgs[0])) {
@@ -119,7 +170,7 @@ async function main() {
     const program = await loadProgram(sourcePath);
     if (program.sourceType !== 'assembly') throw new Error('run expects Merzato Assembly; use art for SVG');
     const host = new ConsoleHost({ write: !options.json });
-    const result = await new MerzatoVM(program, host, { maxSteps: options.maxSteps }).run();
+    const result = await executeProgram(program, host, options);
     if (options.json) writeJson({ output: host.outputText, result });
     return;
   }
@@ -128,7 +179,7 @@ async function main() {
     const program = await loadProgram(sourcePath, midiPath);
     if (program.sourceType !== 'svg-art') throw new Error('art expects a .merz.svg source file');
     const host = new ConsoleHost({ write: !options.json });
-    const result = await new MerzatoVM(program, host, { maxSteps: options.maxSteps }).run();
+    const result = await executeProgram(program, host, options);
     if (options.json) writeJson({ output: host.outputText, score: program.score, result });
     return;
   }
@@ -167,6 +218,15 @@ try {
     if (process.argv.includes('--debug') && error.stack) stderr.write(`${error.stack}\n`);
   }
   const sourceError = error instanceof SyntaxError || error.name?.includes('Validation') ||
-    ['UNKNOWN_LABEL', 'UNKNOWN_ENTRY', 'UNKNOWN_OPCODE', 'DUPLICATE_ENTRY', 'DUPLICATE_LABEL'].includes(error.code);
+    [
+      'UNKNOWN_LABEL',
+      'UNKNOWN_ENTRY',
+      'UNKNOWN_OPCODE',
+      'UNKNOWN_CONSTANT',
+      'DUPLICATE_ENTRY',
+      'DUPLICATE_LABEL',
+      'DUPLICATE_CONSTANT',
+      'INVALID_CONSTANT'
+    ].includes(error.code);
   process.exitCode = sourceError ? 2 : 1;
 }

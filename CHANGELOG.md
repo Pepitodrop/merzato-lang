@@ -4,6 +4,20 @@ All notable changes to Merzato are documented here. The project follows semantic
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-07-17
+
+### Language
+
+- Added named compile-time constants with `.const NAME literal` and `$NAME` references.
+- Constants may contain arbitrary-precision integers, registers, or quoted strings and can be referenced before their declaration.
+- Added deterministic diagnostics for unknown, duplicate, malformed, and non-literal constant definitions.
+
+### Tooling
+
+- Added `--trace` to `merzato run` and `merzato art`.
+- Trace output reports the program counter, source line or artwork order, decoded instruction, and stack before every step without changing normal stdout output.
+- Added a runnable constants example and automated coverage for constants and tracing.
+
 ## [1.0.1] - 2026-07-13
 
 ### Documentation and discoverability

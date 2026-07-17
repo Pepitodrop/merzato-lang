@@ -1,6 +1,6 @@
 {
   "name": "merzato-lang",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "A multimodal art programming language combining Piet-style colour transitions, Velato-inspired musical intervals, MerzScript absurdism, and a bounded assembly VM.",
   "type": "module",
   "bin": {

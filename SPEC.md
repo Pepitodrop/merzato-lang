@@ -1,8 +1,8 @@
-# Merzato 1.0 Language Specification
+# Merzato 1.1 Language Specification
 
 ## 1. Status and identity
 
-This document defines the normative **Merzato 1.0 stable profile**. Merzato is a multimodal art programming language whose programs may be authored as:
+This document defines the normative **Merzato 1.1 stable profile**. Merzato is a multimodal art programming language whose programs may be authored as:
 
 1. **Merzato Assembly (`.mza`)** — canonical low-level source.
 2. **Ordered Merzato SVG (`.merz.svg`)** — Piet-style colour transitions select operations.
@@ -11,7 +11,7 @@ This document defines the normative **Merzato 1.0 stable profile**. Merzato is a
 
 The slogan is: **Paint it. Play it. Insult the browser.**
 
-Implementations claiming Merzato 1.0 compatibility must implement the Assembly and VM sections. SVG, MIDI, browser, and CLI support are profiles and must identify themselves when implemented.
+Implementations claiming Merzato 1.1 compatibility must implement the Assembly and VM sections. SVG, MIDI, browser, and CLI support are profiles and must identify themselves when implemented.
 
 ## 2. Values and machine state
 
@@ -31,24 +31,29 @@ Registers initially contain integer zero. The stack, call stack, and heap are in
 
 ## 3. Assembly grammar
 
-Source is UTF-8 text. Instructions and directives are case-insensitive; labels are case-sensitive.
+Source is UTF-8 text. Instructions and directives are case-insensitive; labels and constant names are case-sensitive.
 
 ```text
-program      := line*
-line         := whitespace? (directive | label? instruction?) comment? newline
-comment      := ";" text
-label        := identifier ":"
-directive    := ".entry" identifier
-instruction  := opcode operand-list?
-operand-list := operand ((whitespace | ",") operand)*
-operand      := integer | register | quoted-string | bare-symbol
-register     := "r0" ... "r15"
-identifier   := [A-Za-z_][A-Za-z0-9_.-]*
+program            := line*
+line               := whitespace? (directive | label? instruction?) comment? newline
+comment            := ";" text
+label              := identifier ":"
+directive          := ".entry" identifier
+                    | ".const" identifier literal
+instruction        := opcode operand-list?
+operand-list       := operand ((whitespace | ",") operand)*
+operand             := integer | register | quoted-string | constant-reference | bare-symbol
+constant-reference := "$" identifier
+literal            := integer | register | quoted-string
+register           := "r0" ... "r15"
+identifier         := [A-Za-z_][A-Za-z0-9_.-]*
 ```
 
 Double-quoted strings use JSON string escaping. Single-quoted strings support `\\`, `\'`, `\"`, `\n`, `\r`, `\t`, `\0`, and `\uXXXX`. Semicolons inside quoted strings are not comments.
 
-Exactly zero or one `.entry` directive is permitted. Labels must be unique. Unknown directives, instructions, labels, invalid registers, unterminated strings, and incorrect operand counts are compile-time errors.
+Exactly zero or one `.entry` directive is permitted. `.const NAME literal` defines a compile-time constant containing an arbitrary-precision integer, register, or quoted string. A constant is referenced as `$NAME`, may be used before its declaration, and is substituted before validation; constants do not exist in VM state at runtime.
+
+Constant names and labels each must be unique within their own namespace. Unknown directives, instructions, labels, constants, invalid registers, malformed constant definitions, unterminated strings, and incorrect operand counts are compile-time errors.
 
 `MERZ` is an assembly alias for `SYS`.
 
@@ -174,9 +179,17 @@ Browser event callbacks must be serialized relative to each other. Input values 
 
 DOM operations must remain inside the configured root. Network and prompt capabilities are disabled by default in the reference implementation. Network requests require an explicit origin policy.
 
-Hosts may add phrases, but added phrases are not part of the Merzato 1.0 standard ABI.
+Hosts may add phrases, but added phrases are not part of the Merzato 1.1 standard ABI.
 
-## 9. Turing completeness
+## 9. CLI tracing profile
+
+The reference CLI accepts `--trace` for `run` and `art`. Trace records are written to standard error so normal program output and JSON output on standard output remain unchanged.
+
+Each record identifies the current program counter, available source line or artwork order, decoded instruction and operands, and the operand stack before execution. A final record reports the halted program counter, executed step count, and final stack.
+
+Tracing is observational: enabling it must not change VM state, host calls, resource limits, output, or error behavior.
+
+## 10. Turing completeness
 
 Merzato can simulate a two-counter Minsky machine:
 
@@ -187,6 +200,6 @@ Merzato can simulate a two-counter Minsky machine:
 
 Therefore the abstract machine is Turing complete. Concrete executions remain resource-bounded.
 
-## 10. Compatibility
+## 11. Compatibility
 
 Within 1.x, conforming releases must not change instruction stack effects, register count, interval mapping, ordered-SVG attribute meaning, standard MerzScript contracts, or documented public API behavior without an explicit opt-in profile. Additions may be made compatibly. See `docs/STABILITY.md`.

@@ -1,0 +1,15 @@
+; Named constants make assembly programs easier to read and maintain.
+.const RESULT_REGISTER r2
+.const ANSWER 42
+.const NEWLINE 10
+
+.entry main
+
+main:
+  push $ANSWER
+  store $RESULT_REGISTER
+  load $RESULT_REGISTER
+  outn
+  push $NEWLINE
+  outc
+  halt

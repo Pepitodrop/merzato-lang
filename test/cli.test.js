@@ -16,7 +16,7 @@ function execute(args, options = {}) {
 test('CLI reports the stable version', () => {
   const result = execute(['--version']);
   assert.equal(result.status, 0);
-  assert.equal(result.stdout.trim(), '1.0.1');
+  assert.equal(result.stdout.trim(), '1.1.0');
 });
 
 test('CLI validates files and supports JSON output', () => {

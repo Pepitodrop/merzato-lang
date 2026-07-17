@@ -4,7 +4,7 @@
 [![CodeQL](https://github.com/Pepitodrop/merzato-lang/actions/workflows/codeql.yml/badge.svg)](https://github.com/Pepitodrop/merzato-lang/actions/workflows/codeql.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![Node.js 20+](https://img.shields.io/badge/Node.js-20%2B-339933)](https://nodejs.org/)
-[![Version 1.0.1](https://img.shields.io/badge/version-1.0.1-blue.svg)](./CHANGELOG.md)
+[![Version 1.1.0](https://img.shields.io/badge/version-1.1.0-blue.svg)](./CHANGELOG.md)
 [![Try online](https://img.shields.io/badge/try-online-brightgreen.svg)](https://pepitodrop.github.io/merzato-lang/)
 
 > **Paint it. Play it. Insult the browser.**
@@ -16,7 +16,7 @@
 - **MerzScript absurdism:** joke-language phrases invoke explicit host capabilities;
 - **assembly foundations:** a validated register/stack VM is the canonical execution layer.
 
-Version **1.0.1** implements the stable 1.x Assembly, ordered-SVG, MIDI, MerzScript, CLI, and JavaScript API profile. It can create interactive browser applications and is Turing complete at the abstract-machine level.
+Version **1.1.0** implements the stable 1.x Assembly, ordered-SVG, MIDI, MerzScript, CLI, and JavaScript API profile. It adds named compile-time constants and source-level execution tracing while remaining compatible with Merzato 1.0 programs.
 
 ## Try Merzato
 
@@ -122,6 +122,55 @@ Machine-readable output:
 ```bash
 node src/cli.js run examples/hello.mza --json
 ```
+
+## Named constants
+
+Merzato 1.1 adds compile-time constants for repeated values, registers, and strings. Define them with `.const` and reference them with `$NAME`:
+
+```asm
+.const RESULT_REGISTER r2
+.const ANSWER 42
+.const NEWLINE 10
+
+.entry main
+
+main:
+  push $ANSWER
+  store $RESULT_REGISTER
+  load $RESULT_REGISTER
+  outn
+  push $NEWLINE
+  outc
+  halt
+```
+
+Constants are case-sensitive, may be referenced before their declaration, and are substituted before validation. Their values must be an arbitrary-precision integer, a register from `r0` to `r15`, or a quoted string.
+
+Run the included example:
+
+```bash
+node src/cli.js run examples/constants.mza
+# 42
+```
+
+## Trace execution
+
+Add `--trace` to `run` or `art` to see every instruction before it executes:
+
+```bash
+node src/cli.js run examples/constants.mza --trace
+```
+
+Program output stays on standard output. Trace records go to standard error and include the program counter, source line or artwork order, decoded instruction, and current stack:
+
+```text
+[trace] pc=0 line=9 PUSH 42 stack=[]
+[trace] pc=1 line=10 STORE r2 stack=[42]
+...
+[trace] halted steps=7 pc=7 stack=[]
+```
+
+Tracing also works together with `--json`, because the JSON result remains isolated on standard output.
 
 ## Build a browser app
 
@@ -266,7 +315,7 @@ web/                 zero-build browser playground
 test/                conformance, security, integration, and CLI tests
 scripts/             release checks and browser end-to-end test
 docs/                architecture, stability, ABI, release, and usage documentation
-SPEC.md               normative 1.0 language specification
+SPEC.md               normative 1.1 language specification
 ```
 
 ## Documentation
