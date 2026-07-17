@@ -1,0 +1,30 @@
+# A two-counter-machine-style loop: move five units from r0 to r1.
+Die Regierung beginnt bei main.
+
+Zum Tagesordnungspunkt main.
+  Wir brauchen jetzt 5.
+  Das kommt jetzt in das Ministerium r0.
+  Wir brauchen jetzt 0.
+  Das kommt jetzt in das Ministerium r1.
+
+Zum Tagesordnungspunkt schleife.
+  Aus dem Ministerium r0 wird geliefert.
+  Wenn das null ist, gehen wir zu ende.
+
+  Aus dem Ministerium r0 wird geliefert.
+  Wir brauchen jetzt 1.
+  Wir ziehen das ab, damit der Haushalt stimmt.
+  Das kommt jetzt in das Ministerium r0.
+
+  Aus dem Ministerium r1 wird geliefert.
+  Wir brauchen jetzt 1.
+  Wir rechnen das zusammen, denn Leistung muss sich lohnen.
+  Das kommt jetzt in das Ministerium r1.
+  Wir gehen jetzt ohne weitere Debatte zu schleife.
+
+Zum Tagesordnungspunkt ende.
+  Aus dem Ministerium r1 wird geliefert.
+  Die Zahl muss jetzt raus.
+  Wir brauchen jetzt 10.
+  Der Buchstabe muss jetzt raus.
+  Wir beenden diese Debatte.
