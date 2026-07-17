@@ -104,10 +104,13 @@ export class BrowserHost implements MerzatoHost {
   dispose(): void;
 }
 
+export type MerzSpeechRule = readonly [RegExp, (match: RegExpMatchArray) => string[]];
+
 export function assemble(source: string, options?: { filename?: string }): Program;
 export function transpileMerzSpeech(source: string): string;
 export function compileMerzSpeech(source: string, options?: { filename?: string }): Program;
-export const MERZ_SPEECH_RULES: ReadonlyArray<readonly [RegExp, (match: RegExpMatchArray) => string[]]>;
+export const MERZ_MEME_RULES: ReadonlyArray<MerzSpeechRule>;
+export const MERZ_SPEECH_RULES: ReadonlyArray<MerzSpeechRule>;
 export function compileArtSvg(source: string, options?: {
   midiNotes?: MidiNote[];
   filename?: string;
