@@ -1,6 +1,7 @@
 import { assemble } from '../src/assembler.js';
 import { compileArtSvg } from '../src/artCompiler.js';
 import { BrowserHost } from '../src/browserHost.js';
+import { compileMerzSpeech } from '../src/merzSpeech.js';
 import { parseMidiNotes } from '../src/midi.js';
 import { MerzatoVM } from '../src/vm.js';
 
@@ -14,7 +15,7 @@ async function loadExample(path) {
   sourceElement.value = await response.text();
 }
 
-await loadExample('../examples/counter.mza');
+await loadExample('../examples/chancellor-counter.merz');
 
 function reset() {
   appElement.replaceChildren();
@@ -28,10 +29,22 @@ async function execute(program) {
   return vm;
 }
 
-document.querySelector('#run').addEventListener('click', async () => {
+async function runCompiler(compiler) {
   reset();
   try {
-    await execute(assemble(sourceElement.value));
+    await execute(compiler(sourceElement.value));
+  } catch (error) {
+    consoleElement.textContent = `Error: ${error.stack ?? error.message}`;
+  }
+}
+
+document.querySelector('#run').addEventListener('click', () => runCompiler(compileMerzSpeech));
+document.querySelector('#runAssembly').addEventListener('click', () => runCompiler(assemble));
+
+document.querySelector('#loadSpeech').addEventListener('click', async () => {
+  reset();
+  try {
+    await loadExample('../examples/chancellor-counter.merz');
   } catch (error) {
     consoleElement.textContent = `Error: ${error.stack ?? error.message}`;
   }
@@ -40,7 +53,7 @@ document.querySelector('#run').addEventListener('click', async () => {
 document.querySelector('#loadMemes').addEventListener('click', async () => {
   reset();
   try {
-    await loadExample('../examples/merz-memes.mza');
+    await loadExample('../examples/merz-memes.merz');
   } catch (error) {
     consoleElement.textContent = `Error: ${error.stack ?? error.message}`;
   }
