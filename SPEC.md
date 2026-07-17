@@ -1,17 +1,20 @@
-# Merzato 1.1 Language Specification
+# Merzato 1.2 Language Specification
 
 ## 1. Status and identity
 
-This document defines the normative **Merzato 1.1 stable profile**. Merzato is a multimodal art programming language whose programs may be authored as:
+This document defines the normative **Merzato 1.2 stable profile**. Merzato is a multimodal art programming language whose programs may be authored as:
 
-1. **Merzato Assembly (`.mza`)** — canonical low-level source.
-2. **Ordered Merzato SVG (`.merz.svg`)** — Piet-style colour transitions select operations.
-3. **Standard MIDI (`.mid`)** — Velato-inspired intervals select register operands.
-4. **MerzScript phrases** — intentionally absurd phrases invoke explicitly enabled host capabilities.
+1. **Merz speech (`.merz`)** — satirical German political rhetoric compiled to the canonical machine.
+2. **Merzato Assembly (`.mza`)** — canonical low-level source.
+3. **Ordered Merzato SVG (`.merz.svg`)** — Piet-style colour transitions select operations.
+4. **Standard MIDI (`.mid`)** — Velato-inspired intervals select register operands.
+5. **MerzScript phrases** — intentionally absurd phrases invoke explicitly enabled host capabilities.
 
-The slogan is: **Paint it. Play it. Insult the browser.**
+The slogan is: **Paint it. Play it. Debate it like the Chancellor.**
 
-Implementations claiming Merzato 1.1 compatibility must implement the Assembly and VM sections. SVG, MIDI, browser, and CLI support are profiles and must identify themselves when implemented.
+The Merz speech profile is a fictional satirical syntax. It is not an impersonation, quotation system, official product, or endorsement by Friedrich Merz, the German Federal Government, the CDU, or any broadcaster.
+
+Implementations claiming Merzato 1.2 compatibility must implement the Assembly and VM sections. Speech, SVG, MIDI, browser, and CLI support are profiles and must identify themselves when implemented.
 
 ## 2. Values and machine state
 
@@ -39,7 +42,7 @@ line               := whitespace? (directive | label? instruction?) comment? new
 comment            := ";" text
 label              := identifier ":"
 directive          := ".entry" identifier
-                    | ".const" identifier literal
+                     | ".const" identifier literal
 instruction        := opcode operand-list?
 operand-list       := operand ((whitespace | ",") operand)*
 operand             := integer | register | quoted-string | constant-reference | bare-symbol
@@ -57,7 +60,51 @@ Constant names and labels each must be unique within their own namespace. Unknow
 
 `MERZ` is an assembly alias for `SYS`.
 
-## 4. Instruction set
+## 4. Merz speech source profile
+
+Merz speech source is UTF-8 text using the `.merz` extension. Each non-empty executable line is one complete German sentence ending in a period. Leading and trailing whitespace are ignored. Comments begin with `#`, `//`, or `;` outside quoted strings.
+
+A conforming compiler translates each sentence deterministically to the following Assembly form:
+
+| Speech sentence pattern | Assembly |
+| --- | --- |
+| `Die Regierung beginnt bei LABEL.` | `.entry LABEL` |
+| `Zum Tagesordnungspunkt LABEL.` | `LABEL:` |
+| `Wir nennen NAME ab jetzt VALUE.` | `.const NAME VALUE` |
+| `Wir brauchen jetzt VALUE.` | `PUSH VALUE` |
+| `Das nehmen wir wieder vom Tisch.` | `POP` |
+| `Das sage ich ganz bewusst noch einmal.` | `DUP` |
+| `Wir drehen die Reihenfolge um.` | `SWAP` |
+| `Wir rechnen das zusammen, denn Leistung muss sich lohnen.` | `ADD` |
+| `Wir ziehen das ab, damit der Haushalt stimmt.` | `SUB` |
+| `Wir vervielfachen das für den Wirtschaftsstandort.` | `MUL` |
+| `Wir teilen das durch, solide finanziert.` | `DIV` |
+| `Der Rest bleibt unter der Schuldenbremse.` | `MOD` |
+| `Das Gegenteil ist jetzt richtig.` | `NOT` |
+| `Wir prüfen, ob das erste größer ist.` | `CMPGT` |
+| `Aus dem Ministerium rN wird geliefert.` | `LOAD rN` |
+| `Das kommt jetzt in das Ministerium rN.` | `STORE rN` |
+| `Wir holen das aus dem Bundesarchiv.` | `HLOAD` |
+| `Wir legen das im Bundesarchiv ab.` | `HSTORE` |
+| `Wir gehen jetzt ohne weitere Debatte zu LABEL.` | `JMP LABEL` |
+| `Wenn das null ist, gehen wir zu LABEL.` | `JZ LABEL` |
+| `Wenn das nicht null ist, gehen wir zu LABEL.` | `JNZ LABEL` |
+| `Wir rufen jetzt LABEL auf.` | `CALL LABEL` |
+| `Wir kehren zur vorherigen Debatte zurück.` | `RET` |
+| `Wir formulieren das jetzt als Text.` | `TOSTR` |
+| `Wir führen diese Aussagen zusammen.` | `CONCAT` |
+| `Die Zahl muss jetzt raus.` | `OUTN` |
+| `Der Buchstabe muss jetzt raus.` | `OUTC` |
+| `Das Kanzleramt ordnet an: PHRASE.` | `MERZ PHRASE` |
+| `Ich sage ganz klar: VALUE.` | `PUSH VALUE`, then `MERZ "THE CRITIC SAYS"` |
+| `Wir beenden diese Debatte.` | `HALT` |
+| `Dazu sage ich heute nichts.` | `NOP` |
+
+`LABEL`, `NAME`, `VALUE`, register, string, and constant-reference rules are inherited from Assembly. Unknown sentences are source errors. Compiled instructions retain the originating speech line for diagnostics and may additionally retain their generated Assembly line.
+
+The reference API exposes `compileMerzSpeech(source)` and `transpileMerzSpeech(source)`. The CLI auto-detects `.merz` files and also provides the explicit `speech` command.
+
+## 5. Instruction set
 
 Stack notation lists the top of stack on the right. `a b → c` means pop `b`, then `a`, and push `c`.
 
@@ -95,9 +142,9 @@ Zero-like values are integer `0`, number `0`, `false`, the empty string, `null`,
 
 Jump targets may resolve to the instruction count, which halts on the next fetch. Other out-of-range targets are invalid.
 
-## 5. Errors and deterministic limits
+## 6. Errors and deterministic limits
 
-A conforming implementation must distinguish source/validation errors from runtime errors. When source metadata exists, runtime errors should identify the instruction index and the assembly line or artwork block.
+A conforming implementation must distinguish source/validation errors from runtime errors. When source metadata exists, runtime errors should identify the instruction index and the speech line, Assembly line, or artwork block.
 
 Implementations may bound:
 
@@ -109,7 +156,7 @@ Implementations may bound:
 
 Reaching a configured limit is a resource error, not normal program termination.
 
-## 6. Ordered SVG profile
+## 7. Ordered SVG profile
 
 Executable SVG elements are `<rect>` start tags containing `data-order`. Non-executable SVG content is ignored and may be used freely as artwork.
 
@@ -145,7 +192,7 @@ DOCTYPE and ENTITY declarations are invalid in executable artwork. Duplicate ord
 
 The ordered profile is stable throughout 1.x. Future full two-dimensional Piet traversal must use an explicit separate profile.
 
-## 7. MIDI profile
+## 8. MIDI profile
 
 Paired scores are Standard MIDI files. Version 1.0 supports formats 0, 1, and 2. The default note sequence is the first track containing note-on events with non-zero velocity. An implementation may expose explicit track selection or a tick-ordered merged-track mode.
 
@@ -157,7 +204,7 @@ register = ((destination_note - source_note) mod 16 + 16) mod 16
 
 MIDI pitches must be integers from 0 through 127. A paired score must contain at least as many notes as the artwork contains executable blocks. Extra notes are ignored by the ordered SVG compiler.
 
-## 8. MerzScript browser ABI
+## 9. MerzScript browser ABI
 
 The stable browser phrases and stack contracts are:
 
@@ -179,27 +226,29 @@ Browser event callbacks must be serialized relative to each other. Input values 
 
 DOM operations must remain inside the configured root. Network and prompt capabilities are disabled by default in the reference implementation. Network requests require an explicit origin policy.
 
-Hosts may add phrases, but added phrases are not part of the Merzato 1.1 standard ABI.
+Hosts may add phrases, but added phrases are not part of the Merzato 1.2 standard ABI.
 
-## 9. CLI tracing profile
+## 10. CLI tracing profile
 
-The reference CLI accepts `--trace` for `run` and `art`. Trace records are written to standard error so normal program output and JSON output on standard output remain unchanged.
+The reference CLI accepts `--trace` for `run`, `speech`, and `art`. Trace records are written to standard error so normal program output and JSON output on standard output remain unchanged.
 
 Each record identifies the current program counter, available source line or artwork order, decoded instruction and operands, and the operand stack before execution. A final record reports the halted program counter, executed step count, and final stack.
 
 Tracing is observational: enabling it must not change VM state, host calls, resource limits, output, or error behavior.
 
-## 10. Turing completeness
+## 11. Turing completeness
 
-Merzato can simulate a two-counter Minsky machine:
+Merzato Assembly can simulate a two-counter Minsky machine:
 
 - counters are arbitrary-precision integers in registers or heap cells;
 - increment uses `LOAD`, `PUSH 1`, `ADD`, and `STORE`;
 - conditional decrement uses zero testing, subtraction, stores, and branches;
 - labels and jumps provide arbitrary control flow.
 
-Therefore the abstract machine is Turing complete. Concrete executions remain resource-bounded.
+The Merz speech profile exposes direct sentence forms for every one of those operations and deterministically compiles them to the same machine. Therefore both the canonical Assembly profile and the Merz speech profile are Turing complete at the abstract-machine level. `examples/two-counter.merz` is an executable witness.
 
-## 11. Compatibility
+Concrete executions remain resource-bounded.
 
-Within 1.x, conforming releases must not change instruction stack effects, register count, interval mapping, ordered-SVG attribute meaning, standard MerzScript contracts, or documented public API behavior without an explicit opt-in profile. Additions may be made compatibly. See `docs/STABILITY.md`.
+## 12. Compatibility
+
+Within 1.x, conforming releases must not change instruction stack effects, register count, interval mapping, ordered-SVG attribute meaning, standard MerzScript contracts, or documented public API behavior without an explicit opt-in profile. The Merz speech profile is an additive source syntax and does not alter existing Assembly, artwork, MIDI, or JavaScript behavior. Additions may be made compatibly. See `docs/STABILITY.md`.
