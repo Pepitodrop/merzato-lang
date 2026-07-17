@@ -1,7 +1,7 @@
 {
   "name": "merzato-lang",
-  "version": "1.1.0",
-  "description": "A multimodal art programming language combining Piet-style colour transitions, Velato-inspired musical intervals, MerzScript absurdism, and a bounded assembly VM.",
+  "version": "1.2.0",
+  "description": "A Turing-complete art programming language with a satirical German political speech dialect, Piet-style colour transitions, MIDI intervals, and a bounded assembly VM.",
   "type": "module",
   "bin": {
     "merzato": "./src/cli.js"
@@ -16,6 +16,10 @@
     "./assembler": {
       "types": "./index.d.ts",
       "import": "./src/assembler.js"
+    },
+    "./speech": {
+      "types": "./index.d.ts",
+      "import": "./src/merzSpeech.js"
     },
     "./art": {
       "types": "./index.d.ts",
@@ -59,8 +63,9 @@
     "test:coverage": "node --test --experimental-test-coverage --test-coverage-lines=80 --test-coverage-branches=70 --test-coverage-functions=90",
     "test:e2e": "node scripts/e2e-browser.js",
     "check": "node --check src/*.js && node --check web/*.js && node --check scripts/*.js && node scripts/check-version.js",
-    "ci": "npm run check && npm test && npm run demo && npm run art && npm pack --dry-run",
+    "ci": "npm run check && npm test && npm run demo && npm run speech && npm run art && npm pack --dry-run",
     "demo": "node src/cli.js run examples/hello.mza",
+    "speech": "node src/cli.js speech examples/two-counter.merz",
     "art": "node src/cli.js art examples/hello.merz.svg examples/hello.mid",
     "serve": "python3 -m http.server 8080"
   },
@@ -71,6 +76,8 @@
     "programming-language",
     "esolang",
     "art-programming",
+    "german",
+    "political-satire",
     "piet",
     "velato",
     "midi",

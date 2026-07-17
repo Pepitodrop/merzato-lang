@@ -9,6 +9,7 @@ export interface Instruction {
   op: string;
   args: Array<MerzatoValue | RegisterOperand>;
   line?: number;
+  generatedLine?: number;
   artOrder?: number;
 }
 
@@ -16,8 +17,9 @@ export interface Program {
   instructions: Instruction[];
   labels: Record<string, number>;
   entry: number;
-  sourceType: 'assembly' | 'svg-art' | string;
+  sourceType: 'assembly' | 'merz-speech' | 'svg-art' | string;
   filename?: string;
+  generatedAssembly?: string;
   score?: ReadonlyArray<{ order: number; note: number }>;
 }
 
@@ -103,6 +105,9 @@ export class BrowserHost implements MerzatoHost {
 }
 
 export function assemble(source: string, options?: { filename?: string }): Program;
+export function transpileMerzSpeech(source: string): string;
+export function compileMerzSpeech(source: string, options?: { filename?: string }): Program;
+export const MERZ_SPEECH_RULES: ReadonlyArray<readonly [RegExp, (match: RegExpMatchArray) => string[]]>;
 export function compileArtSvg(source: string, options?: {
   midiNotes?: MidiNote[];
   filename?: string;
