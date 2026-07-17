@@ -4,6 +4,26 @@ All notable changes to Merzato are documented here. The project follows semantic
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-07-17
+
+### Merz speech language
+
+- Added the `.merz` source profile, where every executable statement is a complete German political-style sentence.
+- Added deterministic mappings for the full stable VM instruction set, including arithmetic, memory, branching, calls, output, and MerzScript syscalls.
+- Added `compileMerzSpeech`, `transpileMerzSpeech`, TypeScript declarations, and the `merzato-lang/speech` package export.
+- Preserved originating speech line numbers in compiled instructions and runtime diagnostics.
+
+### Tooling and examples
+
+- Added the `merzato speech` command and automatic `.merz` detection in `run`, `check`, and `asm`.
+- Made the speech dialect the primary browser-playground syntax while retaining an Assembly runner.
+- Added a complete browser counter, a satire example, and a two-counter-machine-style program written in speech syntax.
+- Added conformance, CLI, runtime, browser, and Turing-completeness coverage for the new profile.
+
+### Compatibility
+
+- The speech profile compiles to the unchanged stable VM; existing Assembly, SVG, MIDI, MerzScript, CLI, and JavaScript programs remain compatible.
+
 ## [1.1.0] - 2026-07-17
 
 ### Language
