@@ -8,7 +8,12 @@ export {
   MerzatoRuntimeError,
   MerzatoResourceError
 } from './errors.js';
-export { compileMerzSpeech, transpileMerzSpeech, MERZ_SPEECH_RULES } from './merzSpeech.js';
+export {
+  compileMerzSpeech,
+  transpileMerzSpeech,
+  MERZ_MEME_RULES,
+  MERZ_SPEECH_RULES
+} from './merzSpeech.js';
 export { parseMidiFile, parseMidiNotes } from './midi.js';
 export { validateProgram, VALID_OPS, INSTRUCTION_SIGNATURES, REGISTER_COUNT } from './validator.js';
 export { ConsoleHost, MerzatoVM, normalizeMerzName } from './vm.js';

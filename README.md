@@ -4,23 +4,23 @@
 [![CodeQL](https://github.com/Pepitodrop/merzato-lang/actions/workflows/codeql.yml/badge.svg)](https://github.com/Pepitodrop/merzato-lang/actions/workflows/codeql.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![Node.js 20+](https://img.shields.io/badge/Node.js-20%2B-339933)](https://nodejs.org/)
-[![Version 1.2.0](https://img.shields.io/badge/version-1.2.0-blue.svg)](./CHANGELOG.md)
+[![Version 1.3.0](https://img.shields.io/badge/version-1.3.0-blue.svg)](./CHANGELOG.md)
 [![Try online](https://img.shields.io/badge/try-online-brightgreen.svg)](https://pepitodrop.github.io/merzato-lang/)
 
 > **Paint it. Play it. Debate it like the Chancellor.**
 
-**Merzato** is a Turing-complete art programming language whose primary `.merz` syntax reads like exaggerated German political rhetoric associated with Friedrich Merz. The sentences compile to a validated register/stack virtual machine, so the language can implement loops, memory, functions, arithmetic, browser applications, and arbitrary computation rather than merely printing jokes.
+**Merzato** is a Turing-complete art programming language whose primary `.merz` syntax reads like exaggerated German political rhetoric associated with Friedrich Merz. The sentences compile to a validated register/stack virtual machine, so the language supports loops, memory, functions, arithmetic, browser applications, and arbitrary computation rather than merely printing jokes.
 
-The speech profile is fictional political satire. It is not an impersonation or quotation system and is not affiliated with or endorsed by Friedrich Merz, the German Federal Government, the CDU, or any broadcaster.
+The speech profile is fictional political satire. It is not an impersonation or quotation system and is not affiliated with or endorsed by Friedrich Merz, the German Federal Government, the CDU, or any broadcaster. Meme names may be public motifs, derived satire, or community-submitted remixes; their inclusion is not a claim that Friedrich Merz literally said or endorsed them.
 
-Merzato also retains its original artistic layers:
+Merzato retains its original artistic layers:
 
 - **Piet-style visual semantics:** SVG colour transitions select operations;
 - **Velato-inspired musical semantics:** MIDI intervals select operands;
 - **MerzScript absurdism:** joke-language phrases invoke explicit browser capabilities;
 - **Assembly compatibility:** `.mza` remains the canonical low-level representation.
 
-Version **1.2.0** adds the complete Merz speech profile while remaining compatible with all Merzato 1.0 and 1.1 programs.
+Version **1.3.0** adds more than thirty functional and marker-style Friedrich-Merz meme aliases while remaining compatible with all Merzato 1.0–1.2 programs.
 
 ## Try it
 
@@ -38,9 +38,7 @@ npm run ci
 npm run serve
 ```
 
-Then open `http://localhost:8080/web/`.
-
-The package has no runtime dependencies.
+Then open `http://localhost:8080/web/`. The package has no runtime dependencies.
 
 ## Hello, Chancellor
 
@@ -50,8 +48,8 @@ Create `hello.merz`:
 Die Regierung beginnt bei main.
 
 Zum Tagesordnungspunkt main.
-  Ich sage ganz klar: "Wir müssen dieses Hello World jetzt gemeinsam anpacken".
-  Wir beenden diese Debatte.
+  Der Bundeskanzler sagt: "Wir müssen dieses Hello World jetzt gemeinsam anpacken".
+  Aber ohne Bubatz.
 ```
 
 Run it:
@@ -72,9 +70,77 @@ The regular `run` command also detects `.merz` files:
 node src/cli.js run hello.merz
 ```
 
+## Meme syntax that performs real work
+
+The memes are language tokens, not only strings in an example. This valid program calculates `42`:
+
+```text
+Die Regierung beginnt bei main.
+
+Zum Tagesordnungspunkt main.
+  Gehobene Mittelschicht mit 40.
+  Gehobene Mittelschicht mit 2.
+  Mehr arbeiten.
+  BlackRock verwaltet r0.
+  Privatflieger liefert r0.
+  Die Zahl muss jetzt raus.
+  Aber ohne Bubatz.
+```
+
+Representative functional aliases:
+
+| Meme syntax | VM operation |
+| --- | --- |
+| `Gehobene Mittelschicht mit 42.` | `PUSH 42` |
+| `Privatflieger liefert r0.` | `LOAD r0` |
+| `BlackRock verwaltet r0.` | `STORE r0` |
+| `Mimimi.` | `DUP` |
+| `Rambo Zambo.` | `SWAP` |
+| `Mehr arbeiten.` | `ADD` |
+| `Leistung muss sich lohnen.` | `ADD` |
+| `Bierdeckel-Steuer.` | `MOD` |
+| `Brandmauer zu loop.` | `JMP loop` |
+| `Im ersten Wahlgang gescheitert, weiter zu ende.` | `JZ ende` |
+| `Im zweiten Wahlgang geht es zu loop.` | `JNZ loop` |
+| `The Greatest Fritz ruft helfer auf.` | `CALL helfer` |
+| `Fritze Merz kehrt zurück.` | `RET` |
+| `Das iPad reagiert: "Text".` | Log text |
+| `Der Bundeskanzler sagt: "Text".` | Log text |
+| `Sosej Kanzler sagt: "Text".` | Log text |
+| `Kalori Kanzler sagt: "Text".` | Log text |
+| `Aber ohne Bubatz.` | `HALT` |
+
+Accepted standalone performance markers compile to `NOP` and therefore do not alter machine state:
+
+```text
+Was ist Bubatz?
+Merz leck Eier.
+Mehrzweckeier.
+Der Bundeskanzler.
+Sosej Kanzler Halal.
+Kalori Kanzler.
+The Greatest Fritz.
+Fritze Merz.
+Rambo Zambo im Adenauer-Haus.
+Aber erst ab 18 Uhr.
+Das iPad nickt.
+Sauerland Airlines.
+Mittelschicht mit Privatflugzeug.
+Kanzler im zweiten Versuch.
+Deutschland muss wieder arbeiten.
+Bubatz im Adenauer-Haus.
+Regierungsflieger statt Privatflieger.
+```
+
+Run the thirty-reference showcase:
+
+```bash
+node src/cli.js speech examples/merz-memes.merz
+```
+
 ## A real loop
 
-This is executable code, not decorative prose. The following program transfers five units from counter `r0` to counter `r1` using a conditional loop:
+This program transfers five units from counter `r0` to `r1` using a conditional loop:
 
 ```text
 Die Regierung beginnt bei main.
@@ -96,14 +162,14 @@ Zum Tagesordnungspunkt schleife.
 
   Aus dem Ministerium r1 wird geliefert.
   Wir brauchen jetzt 1.
-  Wir rechnen das zusammen, denn Leistung muss sich lohnen.
+  Mehr arbeiten.
   Das kommt jetzt in das Ministerium r1.
-  Wir gehen jetzt ohne weitere Debatte zu schleife.
+  Brandmauer zu schleife.
 
 Zum Tagesordnungspunkt ende.
   Aus dem Ministerium r1 wird geliefert.
   Die Zahl muss jetzt raus.
-  Wir beenden diese Debatte.
+  Aber ohne Bubatz.
 ```
 
 Run the included version:
@@ -115,85 +181,43 @@ node src/cli.js speech examples/two-counter.merz
 
 ## Why it is Turing complete
 
-The Merz speech compiler exposes the operations needed to simulate a two-counter Minsky machine:
+The speech compiler exposes the operations needed to simulate a two-counter Minsky machine:
 
 - arbitrary-precision counters in registers or heap cells;
-- increment and decrement through sentence-form load, push, arithmetic, and store operations;
-- zero testing through `Wenn das null ist ...`;
-- arbitrary loops through agenda-point labels and jumps.
+- increment and decrement through load, push, arithmetic, and store sentences;
+- zero testing through conditional jumps;
+- arbitrary loops through labels and jumps.
 
-Those sentences compile to the same abstract VM already proven capable of the simulation. Real executions remain bounded by configured limits and physical memory, as with every practical implementation.
-
-## Speech syntax
-
-Representative mappings:
-
-| Merz speech | Operation |
-| --- | --- |
-| `Die Regierung beginnt bei main.` | Entry point |
-| `Zum Tagesordnungspunkt loop.` | Label |
-| `Wir brauchen jetzt 42.` | Push value |
-| `Das kommt jetzt in das Ministerium r0.` | Store register |
-| `Aus dem Ministerium r0 wird geliefert.` | Load register |
-| `Wir rechnen das zusammen, denn Leistung muss sich lohnen.` | Add |
-| `Wenn das null ist, gehen wir zu ende.` | Conditional jump |
-| `Wir gehen jetzt ohne weitere Debatte zu loop.` | Unconditional jump |
-| `Wir rufen jetzt funktion auf.` | Function call |
-| `Wir kehren zur vorherigen Debatte zurück.` | Return |
-| `Das Kanzleramt ordnet an: "APPLAUD".` | MerzScript syscall |
-| `Wir beenden diese Debatte.` | Halt |
-
-The complete sentence-to-instruction table is in [`docs/MERZ_SPEECH.md`](./docs/MERZ_SPEECH.md).
+The meme aliases are additive shorthand for the same primitives. They do not remove or weaken the existing Turing-complete construction. Real executions remain bounded by configured limits and physical memory, as with every practical implementation.
 
 ## Browser application
 
-The default playground example is a working interactive counter written entirely in the speech dialect:
+The hosted playground starts with a working interactive counter written in the speech dialect. MerzScript syscalls can create and update DOM elements, attach serialized event handlers, style elements, log values, and—when explicitly enabled—perform bounded network requests.
 
 ```text
-Die Regierung beginnt bei main.
-
-Zum Tagesordnungspunkt main.
-  Wir brauchen jetzt "Count: 0".
-  Wir brauchen jetzt "counterButton".
-  Das Kanzleramt ordnet an: "THIS IS NOT A BUTTON".
-  Das kommt jetzt in das Ministerium r0.
-
-  Aus dem Ministerium r0 wird geliefert.
-  Wir brauchen jetzt "#app".
-  Das Kanzleramt ordnet an: "PUT IT IN THE MUSEUM".
-
-  Wir brauchen jetzt "on_click".
-  Aus dem Ministerium r0 wird geliefert.
-  Das Kanzleramt ordnet an: "WHEN THE AUDIENCE CLICKS".
-  Wir beenden diese Debatte.
-
-Zum Tagesordnungspunkt on_click.
-  Ich sage ganz klar: "Der Klick ist im Kanzleramt angekommen".
-  Wir beenden diese Debatte.
+Wir brauchen jetzt "Count: 0".
+Wir brauchen jetzt "counterButton".
+Das Kanzleramt ordnet an: "THIS IS NOT A BUTTON".
 ```
 
-The fuller `examples/chancellor-counter.merz` updates the button after every click. Event executions remain serialized through the VM queue.
+See `examples/chancellor-counter.merz` for the complete application.
 
 ## CLI
 
 ```bash
 # Speech source
 node src/cli.js speech examples/two-counter.merz
-node src/cli.js run examples/two-counter.merz
+node src/cli.js run examples/merz-memes.merz
 
-# Validate without running
+# Validate or inspect without running
 node src/cli.js check examples/two-counter.merz
-
-# Inspect the compiled program
 node src/cli.js asm examples/two-counter.merz --json
 
 # Trace every generated instruction
 node src/cli.js speech examples/two-counter.merz --trace
 
-# Existing Assembly remains supported
+# Existing Assembly and SVG + MIDI remain supported
 node src/cli.js run examples/hello.mza
-
-# Existing SVG + MIDI artwork remains supported
 node src/cli.js art examples/hello.merz.svg examples/hello.mid
 ```
 
@@ -205,6 +229,7 @@ Trace output goes to standard error and identifies the original `.merz` source l
 import {
   compileMerzSpeech,
   ConsoleHost,
+  MERZ_MEME_RULES,
   MerzatoVM,
   transpileMerzSpeech
 } from 'merzato-lang';
@@ -212,12 +237,15 @@ import {
 const source = `
 Die Regierung beginnt bei main.
 Zum Tagesordnungspunkt main.
-Wir brauchen jetzt 42.
+Gehobene Mittelschicht mit 40.
+Gehobene Mittelschicht mit 2.
+Mehr arbeiten.
 Die Zahl muss jetzt raus.
-Wir beenden diese Debatte.
+Aber ohne Bubatz.
 `;
 
 console.log(transpileMerzSpeech(source));
+console.log(MERZ_MEME_RULES.length); // 30+
 
 const program = compileMerzSpeech(source);
 const host = new ConsoleHost({ write: false });
@@ -227,58 +255,19 @@ console.log(host.outputText); // 42
 
 The package includes TypeScript declarations and a `merzato-lang/speech` subpath export.
 
-## Three artistic layers, one runtime
-
-| Layer | Computational role |
-| --- | --- |
-| Merz speech sentence | Selects a canonical Assembly instruction |
-| SVG colour transition | Selects the opcode |
-| MIDI note interval | Selects a register or operand |
-| MerzScript phrase | Invokes an approved host capability |
-| Merzato Assembly | Canonical low-level representation |
-| Merzato VM | Validates and executes the program |
-
 ## Secure embedding
 
-Merzato programs are code, not passive media. The runtime provides:
-
-- instruction, stack, call-stack, heap, string, SVG, MIDI, and response-size limits;
-- validation of speech sentences, opcodes, operand arity, registers, labels, and jump targets before execution;
-- source line, artwork block, and program-counter locations on runtime errors;
-- a browser host confined to one DOM root;
-- network and prompt capabilities disabled by default;
-- explicit network-origin allowlists, timeouts, response limits, and credential omission;
-- disposable browser event bindings.
+Merzato programs are code, not passive media. The runtime provides bounded instructions, stacks, heap, strings, SVG/MIDI inputs, and network responses; strict validation; original source locations; root-confined browser DOM access; disabled-by-default network and prompt capabilities; explicit origin allowlists; and disposable event bindings.
 
 See [`SECURITY.md`](./SECURITY.md) for the trust model.
 
-## Stable 1.x profile
+## Compatibility
 
-The speech syntax is additive. Existing commitments remain unchanged for:
-
-- Assembly instruction names and stack effects;
-- register count and interval-to-register mapping;
-- ordered SVG `data-*` attributes;
-- documented MerzScript phrase contracts;
-- public JavaScript exports and existing CLI command forms.
-
-See [`docs/STABILITY.md`](./docs/STABILITY.md).
-
-## Project layout
-
-```text
-src/                 speech compiler, assembler, validator, VM, SVG/MIDI compilers, hosts, CLI
-examples/            Merz speech, Assembly, SVG, and MIDI programs
-web/                 zero-build browser playground
-test/                conformance, security, integration, speech, and CLI tests
-scripts/             release checks and browser end-to-end test
-docs/                speech syntax, architecture, stability, ABI, and release documentation
-SPEC.md               normative 1.2 language specification
-```
+The meme syntax is additive. Existing commitments remain unchanged for Assembly instruction names and stack effects, register count, SVG and MIDI profiles, MerzScript contracts, JavaScript exports, and existing CLI forms.
 
 ## Documentation
 
-- [Merz speech profile](./docs/MERZ_SPEECH.md)
+- [Merz speech profile and complete meme table](./docs/MERZ_SPEECH.md)
 - [Language specification](./SPEC.md)
 - [Getting started](./docs/GETTING_STARTED.md)
 - [Architecture](./docs/ARCHITECTURE.md)

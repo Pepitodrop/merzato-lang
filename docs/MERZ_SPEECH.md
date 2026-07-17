@@ -1,6 +1,6 @@
 # Merz speech profile
 
-The `.merz` profile lets an entire Merzato program read like exaggerated German political rhetoric associated with Friedrich Merz rather than like Assembly. It is a satirical fictional dialect, is not an impersonation or quotation system, and is not affiliated with or endorsed by Friedrich Merz, the German Federal Government, the CDU, or any broadcaster.
+The `.merz` profile lets an entire Merzato program read like exaggerated German political rhetoric associated with Friedrich Merz rather than like Assembly. It is a fictional satirical dialect, not an impersonation or quotation system, and is not affiliated with or endorsed by Friedrich Merz, the German Federal Government, the CDU, or any broadcaster.
 
 Every accepted sentence compiles deterministically to the stable Merzato VM. Existing `.mza`, `.merz.svg`, MIDI, JavaScript API, and MerzScript programs remain compatible.
 
@@ -24,7 +24,7 @@ node src/cli.js speech examples/two-counter.merz --trace
 
 ## Complete sentence mapping
 
-Each executable statement ends with a period. Blank lines and comments beginning with `#`, `//`, or `;` are ignored. Comment markers inside quoted strings remain part of the string.
+Each executable statement ends with a period, except the question `Was ist Bubatz?`. Blank lines and comments beginning with `#`, `//`, or `;` are ignored. Comment markers inside quoted strings remain part of the string.
 
 | Merz speech sentence | Generated Assembly |
 | --- | --- |
@@ -62,33 +62,91 @@ Each executable statement ends with a period. Blank lines and comments beginning
 
 Operands use the same literal rules as Assembly: arbitrary-precision integers, quoted strings, registers `r0` through `r15`, labels, and `$CONSTANT` references where appropriate.
 
+## Meme aliases
+
+Version 1.3 adds more than thirty meme-shaped aliases. They are real syntax, not a hard-coded output list. Functional aliases perform VM operations:
+
+| Meme syntax | Operation |
+| --- | --- |
+| `Gehobene Mittelschicht mit 42.` | `PUSH 42` |
+| `Privatflieger liefert r0.` | `LOAD r0` |
+| `BlackRock verwaltet r0.` | `STORE r0` |
+| `Mimimi.` | `DUP` |
+| `Rambo Zambo.` | `SWAP` |
+| `Mehr arbeiten.` | `ADD` |
+| `Leistung muss sich lohnen.` | `ADD` |
+| `Bierdeckel-Steuer.` | `MOD` |
+| `Brandmauer zu loop.` | `JMP loop` |
+| `Im ersten Wahlgang gescheitert, weiter zu ende.` | `JZ ende` |
+| `Im zweiten Wahlgang geht es zu loop.` | `JNZ loop` |
+| `The Greatest Fritz ruft helfer auf.` | `CALL helfer` |
+| `Fritze Merz kehrt zurück.` | `RET` |
+| `Das iPad reagiert: "Text".` | Log `Text` |
+| `Der Bundeskanzler sagt: "Text".` | Log `Text` |
+| `Sosej Kanzler sagt: "Text".` | Log `Text` |
+| `Kalori Kanzler sagt: "Text".` | Log `Text` |
+| `Aber ohne Bubatz.` | `HALT` |
+
+The following standalone meme markers are accepted as `NOP`, allowing them to be used as labels in performances without changing machine state:
+
+```text
+Was ist Bubatz?
+Merz leck Eier.
+Mehrzweckeier.
+Der Bundeskanzler.
+Sosej Kanzler Halal.
+Kalori Kanzler.
+The Greatest Fritz.
+Fritze Merz.
+Rambo Zambo im Adenauer-Haus.
+Aber erst ab 18 Uhr.
+Das iPad nickt.
+Sauerland Airlines.
+Mittelschicht mit Privatflugzeug.
+Kanzler im zweiten Versuch.
+Deutschland muss wieder arbeiten.
+Bubatz im Adenauer-Haus.
+Regierungsflieger statt Privatflieger.
+```
+
+Some terms are documented public meme motifs or derived from public remarks; others are community-submitted remix names. Their presence means only that the compiler recognises the satire token, not that Friedrich Merz literally said or endorsed it.
+
+Run the thirty-item showcase:
+
+```bash
+node src/cli.js speech examples/merz-memes.merz
+```
+
 ## Turing completeness
 
-The speech profile is Turing complete at the same abstract-machine level as Merzato Assembly because it can express all primitives needed for a two-counter Minsky machine:
+The speech profile remains Turing complete at the same abstract-machine level as Merzato Assembly because it can express all primitives needed for a two-counter Minsky machine:
 
 - unbounded abstract counters through registers or heap cells;
-- increment through `Aus dem Ministerium ...`, `Wir brauchen jetzt 1.`, addition, and storing;
-- conditional decrement through loading, `Wenn das null ist ...`, subtraction, and storing;
-- arbitrary control flow through agenda-point labels and unconditional jumps.
+- increment through load, push, addition, and store sentences;
+- conditional decrement through loading, zero testing, subtraction, and storing;
+- arbitrary control flow through agenda-point labels and jumps.
 
-`examples/two-counter.merz` implements this construction directly. Concrete runs remain bounded by configured resource limits and physical memory, as with every real implementation of a Turing-complete language.
+`examples/two-counter.merz` implements this construction directly. The meme aliases are additive shorthand and do not remove or alter any primitive. Concrete runs remain bounded by configured resource limits and physical memory, as with every real implementation of a Turing-complete language.
 
 ## JavaScript API
 
 ```js
-import { compileMerzSpeech, ConsoleHost, MerzatoVM } from 'merzato-lang';
+import { compileMerzSpeech, ConsoleHost, MERZ_MEME_RULES, MerzatoVM } from 'merzato-lang';
 
 const program = compileMerzSpeech(`
 Die Regierung beginnt bei main.
 Zum Tagesordnungspunkt main.
-Wir brauchen jetzt 42.
+Gehobene Mittelschicht mit 40.
+Gehobene Mittelschicht mit 2.
+Mehr arbeiten.
 Die Zahl muss jetzt raus.
-Wir beenden diese Debatte.
+Aber ohne Bubatz.
 `);
 
 const host = new ConsoleHost({ write: false });
 await new MerzatoVM(program, host).run();
 console.log(host.outputText); // 42
+console.log(MERZ_MEME_RULES.length); // 30+
 ```
 
 `transpileMerzSpeech(source)` returns the generated canonical Assembly text for inspection or tooling.

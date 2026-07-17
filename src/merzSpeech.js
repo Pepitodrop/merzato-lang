@@ -39,7 +39,49 @@ function syntax(message, line) {
   });
 }
 
+const MEME_RULES = Object.freeze([
+  // Functional aliases: meme-shaped syntax that still performs real VM work.
+  [/^Gehobene Mittelschicht mit (.+)\.$/i, match => [`push ${match[1]}`]],
+  [/^Privatflieger liefert (r(?:[0-9]|1[0-5]))\.$/i, match => [`load ${match[1]}`]],
+  [/^BlackRock verwaltet (r(?:[0-9]|1[0-5]))\.$/i, match => [`store ${match[1]}`]],
+  [/^Mimimi\.$/i, () => ['dup']],
+  [/^Rambo Zambo\.$/i, () => ['swap']],
+  [/^Mehr arbeiten\.$/i, () => ['add']],
+  [/^Leistung muss sich lohnen\.$/i, () => ['add']],
+  [/^Bierdeckel-Steuer\.$/i, () => ['mod']],
+  [/^Brandmauer zu ([A-Za-z_][\w.-]*)\.$/i, match => [`jmp ${match[1]}`]],
+  [/^Im ersten Wahlgang gescheitert, weiter zu ([A-Za-z_][\w.-]*)\.$/i, match => [`jz ${match[1]}`]],
+  [/^Im zweiten Wahlgang geht es zu ([A-Za-z_][\w.-]*)\.$/i, match => [`jnz ${match[1]}`]],
+  [/^The Greatest Fritz ruft ([A-Za-z_][\w.-]*) auf\.$/i, match => [`call ${match[1]}`]],
+  [/^Fritze Merz kehrt zurück\.$/i, () => ['ret']],
+  [/^Das iPad reagiert: (.+)\.$/i, match => [`push ${match[1]}`, 'merz "THE CRITIC SAYS"']],
+  [/^Der Bundeskanzler sagt: (.+)\.$/i, match => [`push ${match[1]}`, 'merz "THE CRITIC SAYS"']],
+  [/^Sosej Kanzler sagt: (.+)\.$/i, match => [`push ${match[1]}`, 'merz "THE CRITIC SAYS"']],
+  [/^Kalori Kanzler sagt: (.+)\.$/i, match => [`push ${match[1]}`, 'merz "THE CRITIC SAYS"']],
+  [/^Aber ohne Bubatz\.$/i, () => ['halt']],
+
+  // Marker aliases: accepted satire tokens that deliberately compile to NOP.
+  [/^Was ist Bubatz\?$/i, () => ['nop']],
+  [/^Merz leck Eier\.$/i, () => ['nop']],
+  [/^Mehrzweckeier\.$/i, () => ['nop']],
+  [/^Der Bundeskanzler\.$/i, () => ['nop']],
+  [/^Sosej Kanzler(?: Halal)?\.$/i, () => ['nop']],
+  [/^Kalori Kanzler\.$/i, () => ['nop']],
+  [/^The Greatest Fritz\.$/i, () => ['nop']],
+  [/^Fritze Merz\.$/i, () => ['nop']],
+  [/^Rambo Zambo im Adenauer-Haus\.$/i, () => ['nop']],
+  [/^Aber erst ab 18 Uhr\.$/i, () => ['nop']],
+  [/^Das iPad nickt\.$/i, () => ['nop']],
+  [/^Sauerland Airlines\.$/i, () => ['nop']],
+  [/^Mittelschicht mit Privatflugzeug\.$/i, () => ['nop']],
+  [/^Kanzler im zweiten Versuch\.$/i, () => ['nop']],
+  [/^Deutschland muss wieder arbeiten\.$/i, () => ['nop']],
+  [/^Bubatz im Adenauer-Haus\.$/i, () => ['nop']],
+  [/^Regierungsflieger statt Privatflieger\.$/i, () => ['nop']]
+]);
+
 const RULES = Object.freeze([
+  ...MEME_RULES,
   [/^Die Regierung beginnt bei ([A-Za-z_][\w.-]*)\.$/i, match => [`.entry ${match[1]}`]],
   [/^Zum Tagesordnungspunkt ([A-Za-z_][\w.-]*)\.$/i, match => [`${match[1]}:`]],
   [/^Wir nennen ([A-Za-z_][\w.-]*) ab jetzt (.+)\.$/i, match => [`.const ${match[1]} ${match[2]}`]],
@@ -130,4 +172,5 @@ export function compileMerzSpeech(source, { filename = '<memory>' } = {}) {
   }, { freeze: true });
 }
 
+export const MERZ_MEME_RULES = MEME_RULES;
 export const MERZ_SPEECH_RULES = RULES;
