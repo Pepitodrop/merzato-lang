@@ -4,6 +4,25 @@ All notable changes to Merzato are documented here. The project follows semantic
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-07-17
+
+### Meme language
+
+- Added more than thirty Friedrich-Merz meme aliases to the `.merz` speech compiler.
+- Added functional aliases for values, registers, arithmetic, modulus, jumps, conditional branches, calls, returns, logging, and halting.
+- Added non-mutating `NOP` markers for `Was ist Bubatz?`, `Merz leck Eier`, `Mehrzweckeier`, `Sosej Kanzler`, `Kalori Kanzler`, `Rambo Zambo`, iPad reactions, private-flight satire, and second-ballot satire.
+- Exported `MERZ_MEME_RULES` with TypeScript declarations for tooling and editor integrations.
+
+### Examples and validation
+
+- Expanded `examples/merz-memes.merz` from five references to a thirty-item meme cabinet.
+- Added execution tests proving the meme aliases perform real VM computation and preserve the Turing-complete canonical language.
+- Updated the README, speech reference, and normative specification with the complete meme mapping and satire disclaimer.
+
+### Compatibility
+
+- Meme aliases are additive source syntax. Existing `.merz`, Assembly, SVG, MIDI, MerzScript, CLI, and JavaScript programs remain compatible.
+
 ## [1.2.0] - 2026-07-17
 
 ### Merz speech language
