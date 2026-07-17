@@ -6,12 +6,14 @@ import { fileURLToPath } from 'node:url';
 import {
   compileMerzSpeech,
   ConsoleHost,
+  MERZ_MEME_RULES,
   MerzatoVM,
   transpileMerzSpeech
 } from '../src/index.js';
 
 const cli = fileURLToPath(new URL('../src/cli.js', import.meta.url));
 const twoCounter = fileURLToPath(new URL('../examples/two-counter.merz', import.meta.url));
+const memeCabinet = fileURLToPath(new URL('../examples/merz-memes.merz', import.meta.url));
 
 function execute(args, options = {}) {
   return spawnSync(process.execPath, [cli, ...args], {
@@ -80,6 +82,95 @@ Wir beenden diese Debatte.
   assert.equal(program.sourceType, 'merz-speech');
   assert.match(program.generatedAssembly, /\.const ANTWORT 42/);
   assert.match(transpileMerzSpeech(source), /merz "THE CRITIC SAYS"/);
+});
+
+test('functional meme aliases execute real computation', async () => {
+  const program = compileMerzSpeech(`
+Die Regierung beginnt bei main.
+Zum Tagesordnungspunkt main.
+Gehobene Mittelschicht mit 40.
+Gehobene Mittelschicht mit 2.
+Mehr arbeiten.
+BlackRock verwaltet r0.
+Privatflieger liefert r0.
+Die Zahl muss jetzt raus.
+Aber ohne Bubatz.
+`);
+  const host = new ConsoleHost({ write: false });
+  const result = await new MerzatoVM(program, host).run();
+
+  assert.equal(host.outputText, '42');
+  assert.equal(result.registers[0], 42n);
+  assert.equal(result.halted, true);
+});
+
+test('at least thirty Merz meme aliases are accepted as language syntax', () => {
+  assert.ok(MERZ_MEME_RULES.length >= 30);
+  const source = `
+Die Regierung beginnt bei main.
+Zum Tagesordnungspunkt main.
+Was ist Bubatz?
+Merz leck Eier.
+Mehrzweckeier.
+Der Bundeskanzler.
+Sosej Kanzler Halal.
+Kalori Kanzler.
+The Greatest Fritz.
+Fritze Merz.
+Rambo Zambo im Adenauer-Haus.
+Aber erst ab 18 Uhr.
+Das iPad nickt.
+Sauerland Airlines.
+Mittelschicht mit Privatflugzeug.
+Kanzler im zweiten Versuch.
+Deutschland muss wieder arbeiten.
+Bubatz im Adenauer-Haus.
+Regierungsflieger statt Privatflieger.
+Gehobene Mittelschicht mit 1.
+Mimimi.
+Rambo Zambo.
+Bierdeckel-Steuer.
+Brandmauer zu ende.
+Im ersten Wahlgang gescheitert, weiter zu ende.
+Im zweiten Wahlgang geht es zu ende.
+The Greatest Fritz ruft helfer auf.
+Das iPad reagiert: "Kommentar gelesen".
+Der Bundeskanzler sagt: "Mehr arbeiten".
+Sosej Kanzler sagt: "Halal".
+Kalori Kanzler sagt: "Kalorien".
+Aber ohne Bubatz.
+Zum Tagesordnungspunkt helfer.
+Fritze Merz kehrt zurück.
+Zum Tagesordnungspunkt ende.
+Wir beenden diese Debatte.
+`;
+
+  const program = compileMerzSpeech(source);
+  assert.equal(program.sourceType, 'merz-speech');
+  assert.match(program.generatedAssembly, /push 1\ndup\nswap\nmod/);
+  assert.match(program.generatedAssembly, /jmp ende\njz ende\njnz ende/);
+  assert.match(program.generatedAssembly, /call helfer/);
+});
+
+test('expanded meme cabinet contains thirty satire references', () => {
+  const result = execute(['speech', memeCabinet]);
+  assert.equal(result.status, 0, result.stderr);
+  const lines = result.stdout.trim().split('\n');
+  assert.equal(lines.length, 30);
+  for (const phrase of [
+    'Merz leck Eier',
+    'Mehrzweckeier',
+    'Sosej Kanzler Halal',
+    'Kalori Kanzler',
+    'The Greatest Fritz',
+    'Das iPad reagiert',
+    'Mittelschicht mit Privatflugzeug',
+    'Kanzler im zweiten Versuch',
+    'BlackRock-Bumerang',
+    'Regierungsflieger statt Privatflieger'
+  ]) {
+    assert.ok(lines.includes(phrase), `missing meme: ${phrase}`);
+  }
 });
 
 test('Merz speech expresses a two-counter-machine loop', async () => {
