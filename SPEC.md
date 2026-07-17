@@ -1,8 +1,8 @@
-# Merzato 1.2 Language Specification
+# Merzato 1.3 Language Specification
 
 ## 1. Status and identity
 
-This document defines the normative **Merzato 1.2 stable profile**. Merzato is a multimodal art programming language whose programs may be authored as:
+This document defines the normative **Merzato 1.3 stable profile**. Programs may be authored as:
 
 1. **Merz speech (`.merz`)** — satirical German political rhetoric compiled to the canonical machine.
 2. **Merzato Assembly (`.mza`)** — canonical low-level source.
@@ -12,37 +12,24 @@ This document defines the normative **Merzato 1.2 stable profile**. Merzato is a
 
 The slogan is: **Paint it. Play it. Debate it like the Chancellor.**
 
-The Merz speech profile is a fictional satirical syntax. It is not an impersonation, quotation system, official product, or endorsement by Friedrich Merz, the German Federal Government, the CDU, or any broadcaster.
+The speech profile is fictional satire. It is not an impersonation, quotation system, official product, or endorsement by Friedrich Merz, the German Federal Government, the CDU, or any broadcaster. Recognised meme labels may be documented public motifs, derived satire, or community-submitted remixes; recognition does not assert that Friedrich Merz literally said or endorsed them.
 
-Implementations claiming Merzato 1.2 compatibility must implement the Assembly and VM sections. Speech, SVG, MIDI, browser, and CLI support are profiles and must identify themselves when implemented.
+Implementations claiming Merzato 1.3 compatibility must implement Assembly and the VM. Speech, SVG, MIDI, browser, and CLI support are profiles and must identify themselves when implemented.
 
 ## 2. Values and machine state
 
-The Merzato Abstract Machine has:
+The Merzato Abstract Machine has 16 tagged registers `r0`–`r15`, an operand stack, an integer-addressed heap, a call stack, a program counter, arbitrary-precision signed integers, strings, host-defined opaque values, and synchronous or asynchronous syscalls.
 
-- 16 general-purpose tagged registers, `r0` through `r15`;
-- an operand stack;
-- an integer-addressed heap;
-- a call stack and program counter;
-- arbitrary-precision signed integers;
-- strings and host-defined opaque values;
-- synchronous or asynchronous host syscalls.
-
-The abstract model is unbounded. Conforming concrete implementations may impose documented positive resource limits and must fail deterministically when a limit is reached.
-
-Registers initially contain integer zero. The stack, call stack, and heap are initially empty. Execution starts at `.entry`, or instruction zero when no entry directive exists.
+The abstract model is unbounded. Concrete implementations may impose documented positive limits and must fail deterministically when a limit is reached. Registers begin at integer zero; stacks and heap begin empty; execution begins at `.entry` or instruction zero.
 
 ## 3. Assembly grammar
-
-Source is UTF-8 text. Instructions and directives are case-insensitive; labels and constant names are case-sensitive.
 
 ```text
 program            := line*
 line               := whitespace? (directive | label? instruction?) comment? newline
 comment            := ";" text
 label              := identifier ":"
-directive          := ".entry" identifier
-                     | ".const" identifier literal
+directive          := ".entry" identifier | ".const" identifier literal
 instruction        := opcode operand-list?
 operand-list       := operand ((whitespace | ",") operand)*
 operand             := integer | register | quoted-string | constant-reference | bare-symbol
@@ -52,21 +39,17 @@ register           := "r0" ... "r15"
 identifier         := [A-Za-z_][A-Za-z0-9_.-]*
 ```
 
-Double-quoted strings use JSON string escaping. Single-quoted strings support `\\`, `\'`, `\"`, `\n`, `\r`, `\t`, `\0`, and `\uXXXX`. Semicolons inside quoted strings are not comments.
+Instructions and directives are case-insensitive; labels and constants are case-sensitive. Double-quoted strings use JSON escapes. Single-quoted strings support `\\`, `\'`, `\"`, `\n`, `\r`, `\t`, `\0`, and `\uXXXX`.
 
-Exactly zero or one `.entry` directive is permitted. `.const NAME literal` defines a compile-time constant containing an arbitrary-precision integer, register, or quoted string. A constant is referenced as `$NAME`, may be used before its declaration, and is substituted before validation; constants do not exist in VM state at runtime.
-
-Constant names and labels each must be unique within their own namespace. Unknown directives, instructions, labels, constants, invalid registers, malformed constant definitions, unterminated strings, and incorrect operand counts are compile-time errors.
-
-`MERZ` is an assembly alias for `SYS`.
+`.const NAME literal` defines an integer, register, or quoted-string compile-time constant. `$NAME` references may precede their declarations. Constants are substituted before validation and do not exist in runtime state. `MERZ` is an alias for `SYS`.
 
 ## 4. Merz speech source profile
 
-Merz speech source is UTF-8 text using the `.merz` extension. Each non-empty executable line is one complete German sentence ending in a period. Leading and trailing whitespace are ignored. Comments begin with `#`, `//`, or `;` outside quoted strings.
+Merz speech is UTF-8 text using `.merz`. Each non-empty executable line is one complete sentence. Comments begin with `#`, `//`, or `;` outside quoted strings. Unknown sentences are source errors. Compiled instructions retain their original speech line.
 
-A conforming compiler translates each sentence deterministically to the following Assembly form:
+### 4.1 Canonical sentence forms
 
-| Speech sentence pattern | Assembly |
+| Speech pattern | Assembly |
 | --- | --- |
 | `Die Regierung beginnt bei LABEL.` | `.entry LABEL` |
 | `Zum Tagesordnungspunkt LABEL.` | `LABEL:` |
@@ -96,159 +79,118 @@ A conforming compiler translates each sentence deterministically to the followin
 | `Die Zahl muss jetzt raus.` | `OUTN` |
 | `Der Buchstabe muss jetzt raus.` | `OUTC` |
 | `Das Kanzleramt ordnet an: PHRASE.` | `MERZ PHRASE` |
-| `Ich sage ganz klar: VALUE.` | `PUSH VALUE`, then `MERZ "THE CRITIC SAYS"` |
+| `Ich sage ganz klar: VALUE.` | `PUSH VALUE`, `MERZ "THE CRITIC SAYS"` |
 | `Wir beenden diese Debatte.` | `HALT` |
 | `Dazu sage ich heute nichts.` | `NOP` |
 
-`LABEL`, `NAME`, `VALUE`, register, string, and constant-reference rules are inherited from Assembly. Unknown sentences are source errors. Compiled instructions retain the originating speech line for diagnostics and may additionally retain their generated Assembly line.
+### 4.2 Functional meme aliases
 
-The reference API exposes `compileMerzSpeech(source)` and `transpileMerzSpeech(source)`. The CLI auto-detects `.merz` files and also provides the explicit `speech` command.
+The following aliases are normative additions in 1.3:
+
+| Meme sentence | Assembly |
+| --- | --- |
+| `Gehobene Mittelschicht mit VALUE.` | `PUSH VALUE` |
+| `Privatflieger liefert rN.` | `LOAD rN` |
+| `BlackRock verwaltet rN.` | `STORE rN` |
+| `Mimimi.` | `DUP` |
+| `Rambo Zambo.` | `SWAP` |
+| `Mehr arbeiten.` | `ADD` |
+| `Leistung muss sich lohnen.` | `ADD` |
+| `Bierdeckel-Steuer.` | `MOD` |
+| `Brandmauer zu LABEL.` | `JMP LABEL` |
+| `Im ersten Wahlgang gescheitert, weiter zu LABEL.` | `JZ LABEL` |
+| `Im zweiten Wahlgang geht es zu LABEL.` | `JNZ LABEL` |
+| `The Greatest Fritz ruft LABEL auf.` | `CALL LABEL` |
+| `Fritze Merz kehrt zurück.` | `RET` |
+| `Das iPad reagiert: VALUE.` | `PUSH VALUE`, `MERZ "THE CRITIC SAYS"` |
+| `Der Bundeskanzler sagt: VALUE.` | `PUSH VALUE`, `MERZ "THE CRITIC SAYS"` |
+| `Sosej Kanzler sagt: VALUE.` | `PUSH VALUE`, `MERZ "THE CRITIC SAYS"` |
+| `Kalori Kanzler sagt: VALUE.` | `PUSH VALUE`, `MERZ "THE CRITIC SAYS"` |
+| `Aber ohne Bubatz.` | `HALT` |
+
+### 4.3 Meme marker aliases
+
+These exact sentences compile to `NOP`:
+
+```text
+Was ist Bubatz?
+Merz leck Eier.
+Mehrzweckeier.
+Der Bundeskanzler.
+Sosej Kanzler.
+Sosej Kanzler Halal.
+Kalori Kanzler.
+The Greatest Fritz.
+Fritze Merz.
+Rambo Zambo im Adenauer-Haus.
+Aber erst ab 18 Uhr.
+Das iPad nickt.
+Sauerland Airlines.
+Mittelschicht mit Privatflugzeug.
+Kanzler im zweiten Versuch.
+Deutschland muss wieder arbeiten.
+Bubatz im Adenauer-Haus.
+Regierungsflieger statt Privatflieger.
+```
+
+Marker aliases permit satirical performance cues without changing machine state. They are not factual assertions or quotations.
+
+The reference API exposes `compileMerzSpeech`, `transpileMerzSpeech`, `MERZ_MEME_RULES`, and `MERZ_SPEECH_RULES`. The CLI auto-detects `.merz` and provides `speech` explicitly.
 
 ## 5. Instruction set
 
-Stack notation lists the top of stack on the right. `a b → c` means pop `b`, then `a`, and push `c`.
+| Instruction | Operand | Stack effect / meaning |
+| --- | --- | --- |
+| `NOP` | — | no operation |
+| `PUSH x` | value | `→ x` |
+| `POP` | — | `x →` |
+| `DUP` | — | `x → x x` |
+| `SWAP` | — | `a b → b a` |
+| `ADD`, `SUB`, `MUL`, `DIV`, `MOD` | — | integer arithmetic |
+| `NOT`, `CMPGT` | — | boolean/comparison result as integer |
+| `LOAD rN`, `STORE rN` | register | register access |
+| `HLOAD`, `HSTORE` | — | integer-addressed heap access |
+| `JMP`, `JZ`, `JNZ` | target | control flow |
+| `CALL`, `RET` | target/— | function control flow |
+| `TOSTR`, `CONCAT` | — | string operations |
+| `OUTN`, `OUTC` | — | number or Unicode-scalar output |
+| `SYS phrase` | string | host syscall |
+| `HALT` | — | stop execution |
 
-| Instruction | Operands | Stack effect | Meaning |
-| --- | --- | --- | --- |
-| `NOP` | — | — | No operation |
-| `PUSH x` | value | `→ x` | Push literal or symbolic value |
-| `POP` | — | `x →` | Discard top value |
-| `DUP` | — | `x → x x` | Duplicate top value |
-| `SWAP` | — | `a b → b a` | Exchange top two values |
-| `ADD` | — | `a b → a+b` | Integer addition |
-| `SUB` | — | `a b → a-b` | Integer subtraction |
-| `MUL` | — | `a b → a×b` | Integer multiplication |
-| `DIV` | — | `a b → a/b` | Truncating integer division; zero divisor is an error |
-| `MOD` | — | `a b → mod(a,b)` | Non-negative modulus relative to `|b|`; zero divisor is an error |
-| `NOT` | — | `x → z` | Push `1` when zero-like, otherwise `0` |
-| `CMPGT` | — | `a b → z` | Push `1` when `a>b`, otherwise `0` |
-| `LOAD rN` | register | `→ value` | Push register value |
-| `STORE rN` | register | `value →` | Store in register |
-| `HLOAD` | — | `address → value` | Read heap; absent cells yield integer zero |
-| `HSTORE` | — | `value address →` | Store heap cell |
-| `JMP target` | label/address | — | Unconditional branch |
-| `JZ target` | label/address | `x →` | Branch when zero-like |
-| `JNZ target` | label/address | `x →` | Branch when not zero-like |
-| `CALL target` | label/address | — | Push return address and branch |
-| `RET` | — | — | Return; an empty call stack halts |
-| `TOSTR` | — | `x → string(x)` | Convert value to string |
-| `CONCAT` | — | `a b → string(a)+string(b)` | Concatenate |
-| `OUTN` | — | `integer →` | Output decimal integer |
-| `OUTC` | — | `integer →` | Output one Unicode scalar value |
-| `SYS phrase` | string | host-defined | Invoke host syscall |
-| `HALT` | — | — | Stop execution |
-
-Zero-like values are integer `0`, number `0`, `false`, the empty string, `null`, and `undefined`.
-
-Jump targets may resolve to the instruction count, which halts on the next fetch. Other out-of-range targets are invalid.
+Division or modulus by zero is an error. `MOD` is non-negative relative to the absolute divisor. Invalid Unicode scalar output is an error. Jump targets may equal the instruction count, which halts at the next fetch.
 
 ## 6. Errors and deterministic limits
 
-A conforming implementation must distinguish source/validation errors from runtime errors. When source metadata exists, runtime errors should identify the instruction index and the speech line, Assembly line, or artwork block.
+Implementations must distinguish source/validation errors from runtime errors and should attach source line, Assembly line, artwork order, and program counter when available. Implementations may bound instructions, stacks, heap cells, string size, source size, SVG blocks, MIDI tracks/events, and network responses. Reaching a limit is a resource error.
 
-Implementations may bound:
+## 7. Ordered SVG and MIDI profiles
 
-- executed instructions per run;
-- operand and call stack depths;
-- heap cell count;
-- string length;
-- source, SVG block, MIDI track/event, and network-response sizes.
+Executable SVG rectangles have unique non-negative `data-order`, a supported Piet palette `fill`, and a note from `data-note` or paired MIDI. Blocks execute in ascending order. Hue and lightness deltas select opcodes according to the stable ordered-SVG transition table. Optional attributes provide pushed values, labels, targets, syscalls, arguments, and destination registers.
 
-Reaching a configured limit is a resource error, not normal program termination.
-
-## 7. Ordered SVG profile
-
-Executable SVG elements are `<rect>` start tags containing `data-order`. Non-executable SVG content is ignored and may be used freely as artwork.
-
-Every executable rectangle requires:
-
-- unique non-negative integer `data-order`;
-- a `fill` from the 18-colour Piet palette;
-- a MIDI note from `data-note` or the paired score.
-
-Blocks are processed in ascending `data-order`. A transition from one block to the next selects an opcode from hue and lightness deltas:
-
-| Hue Δ | same lightness | +1 lightness | +2 lightness |
-| ---: | --- | --- | --- |
-| 0 | `NOP` | `PUSH` | `POP` |
-| 1 | `ADD` | `SUB` | `MUL` |
-| 2 | `DIV` | `MOD` | `NOT` |
-| 3 | `CMPGT` | `JMP` | `JZ` |
-| 4 | `DUP` | `LOAD` | `STORE` |
-| 5 | `SYS` | `OUTN` | `OUTC` |
-
-Optional attributes:
-
-- `data-value` or positive `data-codels` for `PUSH`;
-- `data-codel-size` for area-derived push values;
-- `data-label` to assign an instruction label;
-- `data-target` for branch transitions;
-- `data-merz` and `data-args` for `SYS` transitions;
-- `data-store="rN"` to store a syscall result.
-
-`data-args` is a JSON array containing only strings, booleans, null, or safe integers. JSON integers become arbitrary-precision integers.
-
-DOCTYPE and ENTITY declarations are invalid in executable artwork. Duplicate orders, duplicate labels, unsupported colours, invalid notes, missing syscall phrases, and unresolved branch targets are compile-time errors.
-
-The ordered profile is stable throughout 1.x. Future full two-dimensional Piet traversal must use an explicit separate profile.
-
-## 8. MIDI profile
-
-Paired scores are Standard MIDI files. Version 1.0 supports formats 0, 1, and 2. The default note sequence is the first track containing note-on events with non-zero velocity. An implementation may expose explicit track selection or a tick-ordered merged-track mode.
-
-For `LOAD` and `STORE` colour transitions:
+Paired MIDI supports Standard MIDI formats 0, 1, and 2. For `LOAD` and `STORE` transitions:
 
 ```text
 register = ((destination_note - source_note) mod 16 + 16) mod 16
 ```
 
-MIDI pitches must be integers from 0 through 127. A paired score must contain at least as many notes as the artwork contains executable blocks. Extra notes are ignored by the ordered SVG compiler.
+DOCTYPE/ENTITY input, malformed MIDI, duplicate orders or labels, unsupported colours, invalid notes, and unresolved targets are compile-time errors.
 
-## 9. MerzScript browser ABI
+## 8. MerzScript browser ABI
 
-The stable browser phrases and stack contracts are:
+Stable phrases include `THIS IS NOT A BUTTON`, `THIS IS NOT A DIV`, `PUT IT IN THE MUSEUM`, `APPLAUD`, `DRESS IT LIKE CAPITALISM`, `WHEN THE AUDIENCE CLICKS`, `WHEN THE AUDIENCE TYPES`, `THE CRITIC SAYS`, `BORROW THE INTERNET`, `ASK THE AUDIENCE`, and `THE PERFORMANCE IS OVER`.
 
-| Phrase | Stack before | Effect/result |
-| --- | --- | --- |
-| `THIS IS NOT A BUTTON` | `text id` | Create button; push element |
-| `THIS IS NOT A DIV` | `id` | Create div; push element |
-| `PUT IT IN THE MUSEUM` | `child parent` | Append child |
-| `APPLAUD` | `text target` | Set `textContent` |
-| `DRESS IT LIKE CAPITALISM` | `value property target` | Set one style property |
-| `WHEN THE AUDIENCE CLICKS` | `label target` | Queue label after click |
-| `WHEN THE AUDIENCE TYPES` | `label target` | Queue captured input value, then label |
-| `THE CRITIC SAYS` | `value` | Log value |
-| `BORROW THE INTERNET` | `url` | Fetch text and push it |
-| `ASK THE AUDIENCE` | `prompt` | Prompt and push string |
-| `THE PERFORMANCE IS OVER` | — | Halt |
+Browser events are serialized. DOM access is confined to the configured root. Network and prompt powers are disabled by default. Network access requires an explicit origin allowlist and bounded requests.
 
-Browser event callbacks must be serialized relative to each other. Input values must be captured when the event occurs and inserted into the VM only inside the serialized execution.
+## 9. CLI tracing
 
-DOM operations must remain inside the configured root. Network and prompt capabilities are disabled by default in the reference implementation. Network requests require an explicit origin policy.
+`--trace` is supported for `run`, `speech`, and `art`. Trace records go to standard error and identify the current program counter, source line or artwork order, decoded instruction, and pre-execution stack. Tracing is observational and must not alter execution.
 
-Hosts may add phrases, but added phrases are not part of the Merzato 1.2 standard ABI.
+## 10. Turing completeness
 
-## 10. CLI tracing profile
+Assembly can simulate a two-counter Minsky machine: counters use arbitrary-precision registers or heap cells; increment uses load, push, add, and store; conditional decrement uses zero testing, subtraction, stores, and branches; labels and jumps provide arbitrary control flow.
 
-The reference CLI accepts `--trace` for `run`, `speech`, and `art`. Trace records are written to standard error so normal program output and JSON output on standard output remain unchanged.
+The canonical speech forms expose all of those primitives. The 1.3 meme aliases add shorthand for several of them without removing any operation. Therefore Assembly and Merz speech are Turing complete at the abstract-machine level. `examples/two-counter.merz` is an executable witness. Concrete runs remain resource-bounded.
 
-Each record identifies the current program counter, available source line or artwork order, decoded instruction and operands, and the operand stack before execution. A final record reports the halted program counter, executed step count, and final stack.
+## 11. Compatibility
 
-Tracing is observational: enabling it must not change VM state, host calls, resource limits, output, or error behavior.
-
-## 11. Turing completeness
-
-Merzato Assembly can simulate a two-counter Minsky machine:
-
-- counters are arbitrary-precision integers in registers or heap cells;
-- increment uses `LOAD`, `PUSH 1`, `ADD`, and `STORE`;
-- conditional decrement uses zero testing, subtraction, stores, and branches;
-- labels and jumps provide arbitrary control flow.
-
-The Merz speech profile exposes direct sentence forms for every one of those operations and deterministically compiles them to the same machine. Therefore both the canonical Assembly profile and the Merz speech profile are Turing complete at the abstract-machine level. `examples/two-counter.merz` is an executable witness.
-
-Concrete executions remain resource-bounded.
-
-## 12. Compatibility
-
-Within 1.x, conforming releases must not change instruction stack effects, register count, interval mapping, ordered-SVG attribute meaning, standard MerzScript contracts, or documented public API behavior without an explicit opt-in profile. The Merz speech profile is an additive source syntax and does not alter existing Assembly, artwork, MIDI, or JavaScript behavior. Additions may be made compatibly. See `docs/STABILITY.md`.
+Within 1.x, instruction stack effects, register count, MIDI mapping, ordered-SVG attributes, MerzScript contracts, and documented public APIs must not change without an explicit opt-in profile. Merz speech and meme aliases are additive source syntax and do not alter existing Assembly, artwork, MIDI, or JavaScript behaviour.
