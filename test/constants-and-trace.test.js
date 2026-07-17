@@ -54,7 +54,7 @@ test('CLI trace prints each instruction to stderr without changing program outpu
 
   assert.equal(result.status, 0, result.stderr);
   assert.equal(result.stdout, '42\n');
-  assert.match(result.stderr, /\[trace\] pc=0 line=8 PUSH 42 stack=\[\]/);
-  assert.match(result.stderr, /\[trace\] pc=6 line=14 HALT/);
+  assert.match(result.stderr, /\[trace\] pc=0 line=9 PUSH 42 stack=\[\]/);
+  assert.match(result.stderr, /\[trace\] pc=6 line=15 HALT/);
   assert.match(result.stderr, /\[trace\] halted steps=7 pc=7 stack=\[\]/);
 });
